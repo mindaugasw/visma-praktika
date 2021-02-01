@@ -21,6 +21,24 @@ while (true)
 	if ($input === "q")
 		break;
 	
-	wordToSyllables($input, $patterns);
+	$res = wordToSyllables($input, $patterns);
+	echo $res["originalWordWithSpaces"]."\n";
+	
+	$numberMatrix = $res["numberMatrix"];
+	for ($i = 0; $i < count($numberMatrix); $i++)
+	{
+		$numbersLine = '';
+		
+		for ($j = 0; $j < strlen($input); $j++)
+		{
+			$numbersLine .= " ".($numberMatrix[$i][$j] === -1 ? " " : $numberMatrix[$i][$j]);
+		}
+		echo "$numbersLine  ".$res["matchedPatterns"][$i]["pattern"]."\n";
+	}
+	
+	echo $res["combinedWord"]."\n";
+	echo $res["syllablesWord"]."\n";
+	//echo $res["syllablesWordNoSpaces"]."\n";
+	echo "Time taken: ".$res["time"]." ms\n\n";
 	
 }

@@ -14,12 +14,14 @@ function getPatternsList(): array
 	while (!$file->eof())
 	{
 		$line = trim($file->fgets());
+		$patternNoDots = preg_replace('/\./', '', $line);
 		$text = preg_replace('/[\.\d]/', '', $line);
-		$patterns[] = [
-			"pattern" => $line,
-			"text" => $text,
-			"isStartPattern" => substr($line, 0, 1) === '.',
-			"isEndPattern"=> substr($line, -1) === '.',
+		$patterns[] = [							// Example values:
+			"pattern" => $line,					// .mis1
+			"patternNoDot" => $patternNoDots,	// mis1
+			"text" => $text,					// mis
+			"isStartPattern" => substr($line, 0, 1) === '.',	// true
+			"isEndPattern"=> substr($line, -1) === '.',			// false
 		];
 		
 		/*if (substr($line, 0, 1) === '.')

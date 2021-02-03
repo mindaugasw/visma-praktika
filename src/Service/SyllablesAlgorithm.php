@@ -1,5 +1,12 @@
 <?php
 
+namespace Service;
+
+use Entity\HyphenationPattern;
+use Entity\WordInput;
+use Entity\WordResult;
+use Exception;
+
 class SyllablesAlgorithm
 {
 	public static function processOneWord(WordInput $input, array $patterns)

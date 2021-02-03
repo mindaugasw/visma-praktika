@@ -1,5 +1,7 @@
 <?php
 
+namespace Entity;
+
 class HyphenationPattern
 {
 	/** @var string Full Hyphenation pattern, e.g. .mis1*/

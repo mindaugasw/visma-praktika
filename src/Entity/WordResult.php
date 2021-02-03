@@ -1,5 +1,7 @@
 <?php
 
+namespace Entity;
+
 class WordResult extends WordInput
 {
 	/** @var string Final result - word divided into syllables, e.g. mis-trans-late */

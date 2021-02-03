@@ -1,5 +1,7 @@
 <?php
 
+namespace Entity;
+
 class WordInput
 {
 	/** @var string Original word input, e.g. mistranslate */

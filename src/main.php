@@ -1,9 +1,8 @@
 <?php
-require_once("Entity/HyphenationPattern.php");
-require_once("Entity/WordInput.php");
-require_once("Entity/WordResult.php");
-require_once("Service/InputReader.php");
-require_once("Service/SyllablesAlgorithm.php");
+require_once(__DIR__."/../autoload.php");
+
+use Service\InputReader;
+use Service\SyllablesAlgorithm;
 
 $args = getopt("", ["input::", "batch::"]);
 $patterns = InputReader::getPatternsList();

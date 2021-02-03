@@ -1,5 +1,12 @@
 <?php
 
+namespace Service;
+
+use Entity\HyphenationPattern;
+use Entity\WordInput;
+use Exception;
+use SplFileObject;
+
 class InputReader
 {
 	public static function getPatternsList()

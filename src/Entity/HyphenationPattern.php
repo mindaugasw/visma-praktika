@@ -26,7 +26,7 @@ class HyphenationPattern
 	{
 		$this->pattern = $pattern;
 		$this->patternNoDot = strval(preg_replace('/\./', '', $pattern)); // TODO strval remove
-		$this->patternText = strval(preg_replace('/[\.\d]/', '', $pattern));
+		$this->patternText = strval(preg_replace('/[\d]/', '', $this->patternNoDot));
 		$this->isStartPattern = substr($pattern, 0, 1) === '.';
 		$this->isEndPattern = substr($pattern, -1) === '.';
 	}

@@ -9,11 +9,9 @@ use SplFileObject;
 
 class InputReader
 {
-	public static function getPatternsList()
+	public function getPatternsList(string $path)
 	{
-		$path = __DIR__."/../../data/text-hyphenation-patterns.txt";
 		$file = new SplFileObject($path);
-		
 		$patterns = [];
 		
 		while (!$file->eof())
@@ -34,7 +32,7 @@ class InputReader
 	 * @param array $args
 	 * @return WordInput|bool
 	 */
-	public static function getWordInput(array &$args)
+	public function getWordInput(array &$args)
 	{
 		$promptText = "Enter a word (or q to quit): ";
 		$input = null;
@@ -60,7 +58,7 @@ class InputReader
 	 * Get word list for batch processing
 	 * @param string $filePath
 	 */
-	public static function getWordList(string $filePath)
+	public function getWordList(string $filePath)
 	{
 		throw new Exception("Not implemented");
 		

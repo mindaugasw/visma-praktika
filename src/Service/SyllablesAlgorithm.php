@@ -9,13 +9,15 @@ use Exception;
 
 class SyllablesAlgorithm
 {
-	public static function processOneWord(WordInput $input, array $patterns)
+	private const TIME_DIVISOR = 1_000_000; // ns to ms
+	
+	public function processOneWord(WordInput $input, array $patterns)
 	{
-		$res = self::wordToSyllables($input->input, $patterns);
-		self::printOneWordResult($res);
+		$res = $this->wordToSyllables($input->input, $patterns);
+		$this->printOneWordResult($res);
 	}
 	
-	public static function processBatch()
+	public function processBatch()
 	{
 		throw new Exception("Not implemented");
 		/*function processBatch(array $words, array $patterns)
@@ -55,7 +57,7 @@ class SyllablesAlgorithm
 	 * @param array<HyphenationPattern> $patterns
 	 * @return WordResult
 	 */
-	private static function wordToSyllables(string $input, array $patterns): WordResult
+	private function wordToSyllables(string $input, array $patterns): WordResult
 	{
 		$startTime = hrtime(true);
 		
@@ -98,7 +100,7 @@ class SyllablesAlgorithm
 		$res->result = strval(preg_replace('/ /', '', $res->resultWithSpaces));
 		
 		$endTime = hrtime(true);
-		$res->time = ($endTime - $startTime) / 1_000_000;
+		$res->time = ($endTime - $startTime) / self::TIME_DIVISOR;
 		
 		return $res;
 	}
@@ -110,7 +112,7 @@ class SyllablesAlgorithm
 	 * @param array $numberMatrix
 	 * @return string
 	 */
-	private static function combineWordWithNumbers(string $word, array $numberMatrix): string
+	private function combineWordWithNumbers(string $word, array $numberMatrix): string
 	{
 		$combined = "";
 		
@@ -138,7 +140,7 @@ class SyllablesAlgorithm
 		return $combined;
 	}
 	
-	private static function printOneWordResult(WordResult $res)
+	private function printOneWordResult(WordResult $res)
 	{
 		echo $res->inputWithSpaces."\n";
 		

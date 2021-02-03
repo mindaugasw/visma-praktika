@@ -5,13 +5,13 @@ namespace Entity;
 class WordInput
 {
 	/** @var string Original word input, e.g. mistranslate */
-	public string $input;
+	private string $input;
 	
 	/** @var string Original word with spaces, e.g. m i s t r a n s l a t e */
-	public string $inputWithSpaces;
+	private string $inputWithSpaces;
 	
 	/* @var string Expected result with which actual result will be compared */
-	public string $expectedResult;
+	private string $expectedResult;
 	
 	public function __construct(string $input, string $expectedResult = null)
 	{
@@ -20,6 +20,34 @@ class WordInput
 		
 		if ($expectedResult !== null)
 			$this->expectedResult = $expectedResult;
+	}
+	
+	/**
+	 * Original word input, e.g. mistranslate
+	 * @return string
+	 */
+	public function getInput(): string
+	{
+		return $this->input;
+	}
+		
+	/**
+	 * Original word with spaces, e.g. m i s t r a n s l a t e
+	 * @return string
+	 */
+	public function getInputWithSpaces(): string
+	{
+		return $this->inputWithSpaces;
+	}
+		
+	/**
+	 * Expected result with which actual result will be compared.
+	 * Can be null.
+	 * @return string|null
+	 */
+	public function getExpectedResult()
+	{
+		return isset($this->expectedResult) ? $this->expectedResult : null;
 	}
 	
 }

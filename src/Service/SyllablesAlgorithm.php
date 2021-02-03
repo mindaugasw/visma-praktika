@@ -14,10 +14,14 @@ class SyllablesAlgorithm
 	private const TIME_DIVISOR_S = 1_000_000_000; // ns to s
 	private const ITEMS_IN_ONE_BATCH = 100;
 	
-	public function processOneWord(WordInput $input, array $patterns)
+	/**
+	 * @param WordInput $input
+	 * @param array<HyphenationPattern> $patterns
+	 * @return WordResult
+	 */
+	public function processOneWord(WordInput $input, array $patterns): WordResult
 	{
 		return $this->wordToSyllables($input, $patterns);
-		//$this->printOneWordResult($res);
 	}
 	
 	/**
@@ -27,8 +31,8 @@ class SyllablesAlgorithm
 	 */
 	public function processBatch(array $words, array $patterns, string $outputFilePath)
 	{
-		//$outputFile = new SplFileObject($outputFilePath, "w");
-		//$outputFile->fwrite("input,expectedResult,actualResult,isCorrect\n");
+		// TODO fix multibyte encoding
+		throw new Exception();
 		/** @var array<WordResult> $outputWords */
 		$outputWords = [];
 		/** @var array<WordResult> WordResult $badWords */
@@ -45,6 +49,7 @@ class SyllablesAlgorithm
 		
 		for ($i = 0; $i < $count; $i++)
 		{
+			// Pause processing to print out intermediate results
 			if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
 			{
 				$endTime = hrtime(true);
@@ -59,7 +64,7 @@ class SyllablesAlgorithm
 			
 			$res = $this->wordToSyllables($words[$i], $patterns);
 			
-			if ($res->isCorrect)
+			if ($res->isCorrect())
 				$good++;
 			else
 			{
@@ -88,51 +93,115 @@ class SyllablesAlgorithm
 	{
 		$startTime = hrtime(true);
 		
-		$inputStr = $inputObj->input;
+		$inputStr = $inputObj->getInput();
 		$res = new WordResult($inputObj);
 		
 		for ($i = 0; $i < count($patterns); $i++)
 		{
 			/** @var HyphenationPattern $p Current pattern */
 			$p = clone $patterns[$i];
-			$pos = strpos($inputStr, $p->patternText);
+			$pos = $this->findPatternInWord($inputStr, $p);
 			
-			if ($pos !== false)
+			if ($pos !== -1)
 			{
-				// ensure that start/end pattern positions are valid
-				if ((!$p->isStartPattern || $pos === 0) &&
-					(!$p->isEndPattern || $pos + strlen($p->patternText) === strlen($inputStr)) )
+				$p->setPosition($pos);
+				
+				$res->addMatchedPattern($p);
+				
+				$res->addToNumberMatrix($this->buildMatrixRow($inputStr, $p));
+				
+				
+				// map pattern numbers to specific positions in word
+				/*$numberMatrix = &$res->getNumberMatrix();
+				//$res->getNumberMatrix()[] = array_fill(0, strlen($inputStr), -1); // Doesn't work as array is returned by value
+				$numberMatrix[] = array_fill(0, strlen($inputStr), -1);
+				
+				$numberMatches = []; // numbers from this $p pattern, [[[number, position in pattern], [...], ]]
+				preg_match_all('/\d/', $p->getPatternNoDot(), $numberMatches, PREG_OFFSET_CAPTURE);
+				$numberMatches = $numberMatches[0]; // remove extra nesting
+				
+				for ($j = 0; $j < count($numberMatches); $j++)
 				{
-					$p->position = $pos;
-					$res->matchedPatterns[] = $p;
-					
-					// map pattern numbers to specific positions in word
-					$res->numberMatrix[] = array_fill(0, strlen($inputStr), -1);
-					$numberMatches = []; // numbers from this $p pattern, [[number, position in pattern]]
-					preg_match_all('/\d/', $p->patternNoDot, $numberMatches, PREG_OFFSET_CAPTURE);
-					$numberMatches = $numberMatches[0]; // remove extra nesting
-					
-					for ($j = 0; $j < count($numberMatches); $j++)
-					{
-						$res->numberMatrix
-							[count($res->numberMatrix) - 1] // get last pattern row
-							[$p->position + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
-							= $numberMatches[$j][0];
-					}
-				}
+					$numberMatrix
+						[count($numberMatrix) - 1] // get last pattern row
+						[$p->getPosition() + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
+						= $numberMatches[$j][0];
+				}*/
 			}
 		}
 		
-		$res->resultWithNumbers = self::combineWordWithNumbers($inputStr, $res->numberMatrix);
-		$res->resultWithSpaces = strval(preg_replace(['/[13579]/', '/[2468]/'], ['-', ' '], $res->resultWithNumbers)); // TODO strval remove
-		$res->result = strval(preg_replace('/ /', '', $res->resultWithSpaces));
-		if (isset($res->expectedResult))
-			$res->isCorrect = $res->result === $res->expectedResult;
+		$res->setResultWithNumbers(
+			$this->combineWordWithNumbers($inputStr, $res->getNumberMatrix())
+		);
+		
+		$res->setResultWithSpaces(strval(preg_replace(
+			['/[13579]/', '/[2468]/'],
+			['-', ' '],
+			$res->getResultWithNumbers()
+		))); // TODO strval remove
+		
+		$res->setResult(str_replace(' ', '', $res->getResultWithSpaces()));
+		
+		if ($res->getExpectedResult() !== null)
+			$res->setIsCorrect($res->getResult() === $res->getExpectedResult());
 		
 		$endTime = hrtime(true);
-		$res->time = ($endTime - $startTime) / self::TIME_DIVISOR_MS;
+		$res->setTime(($endTime - $startTime) / self::TIME_DIVISOR_MS);
 		
 		return $res;
+	}
+	
+	// Main algorithm helper methods
+	
+	/**
+	 * Find if this $pattern exists in $input and return its position or -1 
+	 * @param string $input
+	 * @param HyphenationPattern $pattern
+	 * @return int Pattern position in $input or -1 if not found
+	 */
+	private function findPatternInWord(string $input, HyphenationPattern $pattern): int
+	{
+		$pos = strpos($input, $pattern->getPatternText());
+		
+		// pattern not found
+		if ($pos === false)
+			return -1;
+		
+		// start pattern isn't at the start
+		if ($pattern->isStartPattern() && $pos !== 0)
+			return -1;
+		
+		// end pattern isn't at the end
+		if ($pattern->isEndPattern() && $pos + strlen($pattern->getPatternText()) !== strlen($input))
+			return -1;
+		
+		return $pos;
+	}
+	
+	/**
+	 * Builds single matrix row for single pattern.
+	 * I.e. maps pattern numbers to specific positions in the word
+	 * @param string $input
+	 * @param HyphenationPattern $pattern
+	 * @return array<int>
+	 */
+	private function buildMatrixRow(string $input, HyphenationPattern $pattern): array
+	{
+		$matrixRow = array_fill(0, strlen($input), -1);
+		
+		$numberMatches = []; // extracted numbers from this $pattern, [[[number, position in pattern], [...], ]]
+		preg_match_all('/\d/', $pattern->getPatternNoDot(), $numberMatches, PREG_OFFSET_CAPTURE);
+		$numberMatches = $numberMatches[0]; // remove extra nesting
+		
+		// add numbers to correct places in the row
+		for ($j = 0; $j < count($numberMatches); $j++)
+		{
+			$matrixRow
+				[$pattern->getPosition() + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
+				= $numberMatches[$j][0];
+		}
+		
+		return $matrixRow;
 	}
 	
 	/**
@@ -169,26 +238,5 @@ class SyllablesAlgorithm
 		
 		return $combined;
 	}
-	
-	/*private function printOneWordResult(WordResult $res)
-	{
-		echo $res->inputWithSpaces."\n";
-		
-		for ($i = 0; $i < count($res->numberMatrix); $i++)
-		{
-			$numbersRow = ""; // build string of a single row from numberMatrix
-			for ($j = 0; $j < strlen($res->input); $j++)
-			{
-				$numbersRow .= " ".($res->numberMatrix[$i][$j] === -1 ? " " : $res->numberMatrix[$i][$j]);
-			}
-			echo "$numbersRow  ".$res->matchedPatterns[$i]->pattern."\n";
-		}
-		
-		echo $res->resultWithNumbers."\n"
-			.$res->resultWithSpaces."\n"
-			.$res->result."\n"
-			."Time taken: ".$res->time." ms\n\n";
-	}*/
-	
 	
 }

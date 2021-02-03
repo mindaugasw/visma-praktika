@@ -4,31 +4,100 @@ namespace Entity;
 
 class HyphenationPattern
 {
+	// Pattern types, depending on dot position in the pattern
+	private const TYPE_REGULAR = 0;
+	private const TYPE_START = 1;
+	private const TYPE_END = 2;
+	
 	/** @var string Full Hyphenation pattern, e.g. .mis1*/
-	public string $pattern;
+	private string $pattern;
 	
 	/** @var string Pattern without start or end dots, e.g. mis1 */
-	public string $patternNoDot;
+	private string $patternNoDot;
 	
 	/** @var string Only pattern text, e.g. mis */
-	public string $patternText;
+	private string $patternText;
 	
-	/** @var bool Is it word start pattern? e.g. .mis1 */
-	public bool $isStartPattern;
+	private int $patternType;
 	
-	/** @var bool Is it word end pattern? e.g. 4te. */
-	public bool $isEndPattern;
+	/* @var bool Is it word start pattern? e.g. .mis1 */
+	//private bool $isStartPattern;
+	
+	/* @var bool Is it word end pattern? e.g. 4te. */
+	//private bool $isEndPattern;
 	
 	/** @var int Position in word at which this pattern starts */
-	public int $position;
+	private int $position;
+	
 	
 	public function __construct($pattern)
 	{
 		$this->pattern = $pattern;
 		$this->patternNoDot = strval(preg_replace('/\./', '', $pattern)); // TODO strval remove
 		$this->patternText = strval(preg_replace('/[\d]/', '', $this->patternNoDot));
-		$this->isStartPattern = substr($pattern, 0, 1) === '.';
-		$this->isEndPattern = substr($pattern, -1) === '.';
+		
+		if (substr($pattern, 0, 1) === '.') 
+			$this->patternType = self::TYPE_START;
+		else if (substr($pattern, -1) === '.')
+			$this->patternType = self::TYPE_END;
+		else
+			$this->patternType = self::TYPE_REGULAR;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getPattern(): string
+	{
+		return $this->pattern;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getPatternNoDot(): string
+	{
+		return $this->patternNoDot;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getPatternText(): string
+	{
+		return $this->patternText;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isStartPattern(): bool
+	{
+		return $this->patternType === self::TYPE_START;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isEndPattern(): bool
+	{
+		return $this->patternType === self::TYPE_END;
+	}
+		
+	/**
+	 * @return int
+	 */
+	public function getPosition(): int
+	{
+		return $this->position;
+	}
+	
+	/**
+	 * @param int $position
+	 */
+	public function setPosition(int $position): void
+	{
+		$this->position = $position;
 	}
 	
 }

@@ -6,80 +6,108 @@ use Entity\HyphenationPattern;
 use Entity\WordInput;
 use Entity\WordResult;
 use Exception;
+use SplFileObject;
 
 class SyllablesAlgorithm
 {
-	private const TIME_DIVISOR = 1_000_000; // ns to ms
+	private const TIME_DIVISOR_MS = 1_000_000; // ns to ms
+	private const TIME_DIVISOR_S = 1_000_000_000; // ns to s
+	private const ITEMS_IN_ONE_BATCH = 100;
 	
 	public function processOneWord(WordInput $input, array $patterns)
 	{
-		$res = $this->wordToSyllables($input->input, $patterns);
-		$this->printOneWordResult($res);
+		return $this->wordToSyllables($input, $patterns);
+		//$this->printOneWordResult($res);
 	}
 	
-	public function processBatch()
+	/**
+	 * @param array<WordInput> $words
+	 * @param array<HyphenationPattern> $patterns
+	 * @param string $outputFilePath
+	 */
+	public function processBatch(array $words, array $patterns, string $outputFilePath)
 	{
-		throw new Exception("Not implemented");
-		/*function processBatch(array $words, array $patterns)
+		//$outputFile = new SplFileObject($outputFilePath, "w");
+		//$outputFile->fwrite("input,expectedResult,actualResult,isCorrect\n");
+		/** @var array<WordResult> $outputWords */
+		$outputWords = [];
+		/** @var array<WordResult> WordResult $badWords */
+		$badWords = [];
+		
+		$count = count($words);
+		
+		echo "Batch processing $count words, output in $outputFilePath\n\n"
+			."Items done, time taken, +correct -incorrect\n";;
+		
+		$good = 0;
+		$bad = 0;
+		$startTime = hrtime(true);
+		
+		for ($i = 0; $i < $count; $i++)
 		{
-			$count = count($words);
-			echo "$count inputs\nItems done, time taken, +total correct -total incorrect\n";
-			$good = 0;
-			$bad = 0;
-			
-			$startTime = hrtime(true);
-			for ($i = 0; $i < $count; $i++)
+			if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
 			{
-				if ($i % 1000 === 0)
-				{
-					$endTime = hrtime(true);
-					$totalTime = ($endTime - $startTime) / 1_000_000_000;
-					
-					echo "$i, took $totalTime s, +$good -$bad\n";
-					
-					$startTime = hrtime(true);
-				}
-				$word = $words[$i];
-				$res = wordToSyllables($word[0], $patterns);
-				if ($res["syllablesWordShort"] === $word[1])
-					$good++;
-				else
-					$bad++;
+				$endTime = hrtime(true);
+				$totalTime = ($endTime - $startTime) / self::TIME_DIVISOR_S;
+				
+				echo "$i/$count, took $totalTime s, +$good -$bad\n";
+				$good = 0;
+				$bad = 0;
+				
+				$startTime = hrtime(true);
 			}
 			
-			echo "$good;$bad\n";
-		}*/		
+			$res = $this->wordToSyllables($words[$i], $patterns);
+			
+			if ($res->isCorrect)
+				$good++;
+			else
+			{
+				$bad++;
+				$badWords[] = $res;
+			}
+			$outputWords[] = $res;
+		}
+		
+		echo "\nCompleted. Bad words (".count($badWords).", shown up to 30):\nInput, Expected, Actual:\n";
+		for ($i = 0; $i < min(count($badWords), 30); $i++)
+		{
+			echo $badWords[$i]->input.", "
+				.$badWords[$i]->expectedResult.", "
+				.$badWords[$i]->result."\n";
+		}
 	}
 	
 	/**
 	 * Syllabize one word
-	 * @param string $input Word to syllabize
+	 * @param WordInput $inputObj Word to syllabize
 	 * @param array<HyphenationPattern> $patterns
 	 * @return WordResult
 	 */
-	private function wordToSyllables(string $input, array $patterns): WordResult
+	private function wordToSyllables(WordInput $inputObj, array $patterns): WordResult
 	{
 		$startTime = hrtime(true);
 		
-		$res = new WordResult($input);
+		$inputStr = $inputObj->input;
+		$res = new WordResult($inputObj);
 		
 		for ($i = 0; $i < count($patterns); $i++)
 		{
 			/** @var HyphenationPattern $p Current pattern */
 			$p = clone $patterns[$i];
-			$pos = strpos($input, $p->patternText);
+			$pos = strpos($inputStr, $p->patternText);
 			
 			if ($pos !== false)
 			{
 				// ensure that start/end pattern positions are valid
 				if ((!$p->isStartPattern || $pos === 0) &&
-					(!$p->isEndPattern || $pos + strlen($p->patternText) === strlen($input)) )
+					(!$p->isEndPattern || $pos + strlen($p->patternText) === strlen($inputStr)) )
 				{
 					$p->position = $pos;
 					$res->matchedPatterns[] = $p;
 					
 					// map pattern numbers to specific positions in word
-					$res->numberMatrix[] = array_fill(0, strlen($input), -1);
+					$res->numberMatrix[] = array_fill(0, strlen($inputStr), -1);
 					$numberMatches = []; // numbers from this $p pattern, [[number, position in pattern]]
 					preg_match_all('/\d/', $p->patternNoDot, $numberMatches, PREG_OFFSET_CAPTURE);
 					$numberMatches = $numberMatches[0]; // remove extra nesting
@@ -95,12 +123,14 @@ class SyllablesAlgorithm
 			}
 		}
 		
-		$res->resultWithNumbers = self::combineWordWithNumbers($input, $res->numberMatrix);
+		$res->resultWithNumbers = self::combineWordWithNumbers($inputStr, $res->numberMatrix);
 		$res->resultWithSpaces = strval(preg_replace(['/[13579]/', '/[2468]/'], ['-', ' '], $res->resultWithNumbers)); // TODO strval remove
 		$res->result = strval(preg_replace('/ /', '', $res->resultWithSpaces));
+		if (isset($res->expectedResult))
+			$res->isCorrect = $res->result === $res->expectedResult;
 		
 		$endTime = hrtime(true);
-		$res->time = ($endTime - $startTime) / self::TIME_DIVISOR;
+		$res->time = ($endTime - $startTime) / self::TIME_DIVISOR_MS;
 		
 		return $res;
 	}
@@ -140,7 +170,7 @@ class SyllablesAlgorithm
 		return $combined;
 	}
 	
-	private function printOneWordResult(WordResult $res)
+	/*private function printOneWordResult(WordResult $res)
 	{
 		echo $res->inputWithSpaces."\n";
 		
@@ -158,5 +188,7 @@ class SyllablesAlgorithm
 			.$res->resultWithSpaces."\n"
 			.$res->result."\n"
 			."Time taken: ".$res->time." ms\n\n";
-	}
+	}*/
+	
+	
 }

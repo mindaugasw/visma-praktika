@@ -11,13 +11,15 @@ class WordInput
 	public string $inputWithSpaces;
 	
 	/* @var string Expected result with which actual result will be compared */
-	//public string $expectedResult;
+	public string $expectedResult;
 	
-	public function __construct(string $input)
+	public function __construct(string $input, string $expectedResult = null)
 	{
 		$this->input = $input;
-		
 		$this->inputWithSpaces = chunk_split($input, 1, ' ');
+		
+		if ($expectedResult !== null)
+			$this->expectedResult = $expectedResult;
 	}
 	
 }

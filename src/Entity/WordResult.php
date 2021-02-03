@@ -22,10 +22,15 @@ class WordResult extends WordInput
 	/** @var float Processing time, ms */
 	public float $time;
 	
+	/** @var bool Does $result match $expectedResult? */
+	public bool $isCorrect;
 	
-	public function __construct(string $input)
+	
+	public function __construct(WordInput $input)
 	{
-		parent::__construct($input);
+		parent::__construct(
+			$input->input,
+			isset($input->expectedResult) ? $input->expectedResult : null);
 		$this->matchedPatterns = [];
 		$this->numberMatrix = [];
 	}

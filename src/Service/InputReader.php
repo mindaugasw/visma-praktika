@@ -9,6 +9,10 @@ use SplFileObject;
 
 class InputReader
 {
+	const ARGS_SINGLE_INPUT = "input";
+	const ARGS_BATCH_INPUT = "batch";
+	const ARGS_BATCH_OUTPUT = "batchOutput";
+	
 	public function getPatternsList(string $path)
 	{
 		$file = new SplFileObject($path);
@@ -32,15 +36,15 @@ class InputReader
 	 * @param array $args
 	 * @return WordInput|bool
 	 */
-	public function getWordInput(array &$args)
+	public function getSingleWordInput(array &$args)
 	{
 		$promptText = "Enter a word (or q to quit): ";
 		$input = null;
 		
-		if (isset($args["input"]))
+		if (isset($args[self::ARGS_SINGLE_INPUT]))
 		{
-			$input = $args["input"];
-			unset($args["input"]);
+			$input = $args[self::ARGS_SINGLE_INPUT];
+			unset($args[self::ARGS_SINGLE_INPUT]);
 			echo "$promptText$input\n";
 		}
 		else
@@ -57,25 +61,20 @@ class InputReader
 	/**
 	 * Get word list for batch processing
 	 * @param string $filePath
+	 * @return array<WordInput>
 	 */
-	public function getWordList(string $filePath)
+	public function getWordList(string $filePath): array
 	{
-		throw new Exception("Not implemented");
+		$file = new SplFileObject($filePath);
+		$words = [];
 		
-		/*function readBatchInput(string $path): array
+		while (!$file->eof())
 		{
-			$file = new SplFileObject($path);
-			$words = [];
-			
-			while (!$file->eof())
-			{
-				$line = $file->fgets();
-				$word = explode(',', $line);
-				$word[1] = trim($word[1]);
-				$words[] = $word;
-			}
-			
-			return $words;
-		}*/
+			$line = trim($file->fgets());
+			$word = explode(',', $line);
+			$words[] = new WordInput($word[0], $word[1]);
+		}
+		
+		return $words;
 	}
 }

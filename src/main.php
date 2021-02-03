@@ -2,29 +2,38 @@
 require_once(__DIR__."/../autoload.php");
 
 use Service\InputReader;
+use Service\OutputWriter;
 use Service\SyllablesAlgorithm;
 
-$inputReader = new InputReader();
+$reader = new InputReader();
+$writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
 
-$args = getopt("", ["input::", "batch::", "outputDir::"]);
-$patterns = $inputReader->getPatternsList(__DIR__."/../data/text-hyphenation-patterns.txt");
+$args = getopt("", [InputReader::ARGS_SINGLE_INPUT."::", InputReader::ARGS_BATCH_INPUT."::", InputReader::ARGS_BATCH_OUTPUT."::"]);
+$patterns = $reader->getPatternsList(__DIR__."/../data/text-hyphenation-patterns.txt");
 
-if (isset($args["batch"]))
+if (isset($args[InputReader::ARGS_BATCH_INPUT]))
 {
-	throw new Exception("Not implemented");
-	echo "Batch processing - ".$args["batch"]."\n";
-	//processBatch(readBatchInput($args["batch"]), $patterns);
+	if (!file_exists($args[InputReader::ARGS_BATCH_INPUT]))
+		throw new Exception("Input file not found");
+	if (!isset($args[InputReader::ARGS_BATCH_OUTPUT]))
+		throw new Exception("Output file argument missing");
+	
+	
+	$words = $reader->getWordList($args[InputReader::ARGS_BATCH_INPUT]);
+	$alg->processBatch($words, $patterns, $args[InputReader::ARGS_BATCH_OUTPUT]);
+	
 	return;
 }
 else
 {
 	while (true)
 	{
-		$word = $inputReader->getWordInput($args);
+		$word = $reader->getSingleWordInput($args);
 		if ($word === false)
 			return;
 		
-		$alg->processOneWord($word, $patterns);
+		$res = $alg->processOneWord($word, $patterns);
+		$writer->printOneWordResultToConsole($res);
 	}
 }

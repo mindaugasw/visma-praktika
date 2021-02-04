@@ -1,9 +1,9 @@
 <?php
 
-namespace Service;
+namespace App\Service;
 
-use Entity\HyphenationPattern;
-use Entity\WordInput;
+use App\Entity\HyphenationPattern;
+use App\Entity\WordInput;
 use Exception;
 use SplFileObject;
 

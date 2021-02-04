@@ -1,8 +1,8 @@
 <?php
 
-namespace Service;
+namespace App\Service;
 
-use Entity\WordResult;
+use App\Entity\WordResult;
 
 class OutputWriter
 {

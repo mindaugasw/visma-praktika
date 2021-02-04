@@ -1,9 +1,9 @@
 <?php
 require_once(__DIR__."/../autoload.php");
 
-use Service\InputReader;
-use Service\OutputWriter;
-use Service\SyllablesAlgorithm;
+use App\Service\InputReader;
+use App\Service\OutputWriter;
+use App\Service\SyllablesAlgorithm;
 
 $reader = new InputReader();
 $writer = new OutputWriter();

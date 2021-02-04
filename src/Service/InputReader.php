@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\HyphenationPattern;
+use App\Entity\Trie\Trie;
 use App\Entity\WordInput;
 use Exception;
 use SplFileObject;
@@ -13,19 +14,40 @@ class InputReader
 	const ARGS_BATCH_INPUT = "batch";
 	const ARGS_BATCH_OUTPUT = "batchOutput";
 	
-	public function getPatternsList(string $path)
+	public function getPatternList(string $path)
 	{
-		$file = new SplFileObject($path);
 		$patterns = [];
 		
-		while (!$file->eof())
-		{
-			$line = trim($file->fgets());
-			$patterns[] = new HyphenationPattern($line);
-		}
+        $this->readPatternsFile($path, function (string $line) use (&$patterns) {
+            $patterns[] = new HyphenationPattern($line);
+        });
 		
 		return $patterns;
 	}
+	
+	public function getPatternTree(string $path): Trie
+    {
+        $tree = new Trie();
+        
+        $this->readPatternsFile($path, function (string $line) use ($tree) {
+            $pattern = new HyphenationPattern($line);
+            $tree->addValue($pattern->getPatternNoNumbers(), $pattern);
+        });
+        
+        return $tree;
+    }
+    
+    private function readPatternsFile(string $path, $callback): void
+    {
+        $file = new SplFileObject($path);
+    
+        while (!$file->eof())
+        {
+            $line = trim($file->fgets());
+            //$patterns[] = new HyphenationPattern($line);
+            $callback($line);
+        }
+    }
 	
 	/**
 	 * Get single word for processing.

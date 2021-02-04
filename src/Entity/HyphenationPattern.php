@@ -15,6 +15,9 @@ class HyphenationPattern
 	/** @var string Pattern without start or end dots, e.g. mis1 */
 	private string $patternNoDot;
 	
+	/** @var string Pattern without any numbers, e.g. .mis */
+	private string $patternNoNumbers;
+	
 	/** @var string Only pattern text, e.g. mis */
 	private string $patternText;
 	
@@ -27,11 +30,13 @@ class HyphenationPattern
 	
 	public function __construct($pattern)
 	{
+	    //$pattern = strtolower($pattern); // assume all patterns are already lowercase, to improve performance
 		$this->pattern = $pattern;
-		$this->patternNoDot = strval(preg_replace('/\./', '', $pattern)); // TODO strval remove
-		$this->patternText = strval(preg_replace('/[\d]/', '', $this->patternNoDot));
-		
-		if (substr($pattern, 0, 1) === '.') 
+        $this->patternNoDot = str_replace('.', '', $pattern);
+        $this->patternNoNumbers = strval(preg_replace('/[\d]/', '', $pattern)); // TODO strval remove
+        $this->patternText = str_replace('.', '', $this->patternNoNumbers);
+        
+        if (substr($pattern, 0, 1) === '.') 
 			$this->patternType = self::TYPE_START;
 		else if (substr($pattern, -1) === '.')
 			$this->patternType = self::TYPE_END;
@@ -54,6 +59,14 @@ class HyphenationPattern
 	{
 		return $this->patternNoDot;
 	}
+    
+    /**
+     * @return string
+     */
+	public function getPatternNoNumbers(): string
+    {
+        return $this->patternNoNumbers;
+    }
 	
 	/**
 	 * @return string

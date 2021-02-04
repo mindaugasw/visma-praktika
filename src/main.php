@@ -10,8 +10,10 @@ $writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
 
 $args = getopt("", [InputReader::ARGS_SINGLE_INPUT."::", InputReader::ARGS_BATCH_INPUT."::", InputReader::ARGS_BATCH_OUTPUT."::"]);
-$patterns = $reader->getPatternsList(__DIR__."/../data/text-hyphenation-patterns.txt");
+$patterns = $reader->getPatternList(__DIR__."/../data/text-hyphenation-patterns.txt");
+$patternTree = $reader->getPatternTree(__DIR__."/../data/text-hyphenation-patterns.txt");
 
+die();
 if (isset($args[InputReader::ARGS_BATCH_INPUT]))
 {
 	if (!file_exists($args[InputReader::ARGS_BATCH_INPUT]))

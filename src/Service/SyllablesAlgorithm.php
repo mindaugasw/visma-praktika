@@ -10,8 +10,6 @@ use SplFileObject;
 
 class SyllablesAlgorithm
 {
-	private const TIME_DIVISOR_MS = 1_000_000; // ns to ms
-	private const TIME_DIVISOR_S = 1_000_000_000; // ns to s
 	private const ITEMS_IN_ONE_BATCH = 100;
 	
 	/**
@@ -31,8 +29,6 @@ class SyllablesAlgorithm
 	 */
 	public function processBatch(array $words, array $patterns, string $outputFilePath)
 	{
-		// TODO fix multibyte encoding
-		throw new Exception();
 		/** @var array<WordResult> $outputWords */
 		$outputWords = [];
 		/** @var array<WordResult> WordResult $badWords */
@@ -53,7 +49,7 @@ class SyllablesAlgorithm
 			if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
 			{
 				$endTime = hrtime(true);
-				$totalTime = ($endTime - $startTime) / self::TIME_DIVISOR_S;
+				$totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S; // TODO fix using Profiler
 				
 				echo "$i/$count, took $totalTime s, +$good -$bad\n";
 				$good = 0;
@@ -91,7 +87,7 @@ class SyllablesAlgorithm
 	 */
 	private function wordToSyllables(WordInput $inputObj, array $patterns): WordResult
 	{
-		$startTime = hrtime(true);
+		$timer = Profiler::start();
 		
 		$inputStr = $inputObj->getInput();
 		$res = new WordResult($inputObj);
@@ -111,8 +107,8 @@ class SyllablesAlgorithm
 				$res->addToNumberMatrix($this->buildMatrixRow($inputStr, $p));
 				
 				
-				// map pattern numbers to specific positions in word
-				/*$numberMatrix = &$res->getNumberMatrix();
+				/*// map pattern numbers to specific positions in word
+				$numberMatrix = &$res->getNumberMatrix();
 				//$res->getNumberMatrix()[] = array_fill(0, strlen($inputStr), -1); // Doesn't work as array is returned by value
 				$numberMatrix[] = array_fill(0, strlen($inputStr), -1);
 				
@@ -146,7 +142,7 @@ class SyllablesAlgorithm
 			$res->setIsCorrect($res->getResult() === $res->getExpectedResult());
 		
 		$endTime = hrtime(true);
-		$res->setTime(($endTime - $startTime) / self::TIME_DIVISOR_MS);
+		$res->setTime(Profiler::stop($timer));
 		
 		return $res;
 	}

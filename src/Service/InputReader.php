@@ -65,6 +65,9 @@ class InputReader
 	 */
 	public function getWordList(string $filePath): array
 	{
+		// TODO fix multibyte encoding when reading from file
+		throw new Exception();
+		
 		$file = new SplFileObject($filePath);
 		$words = [];
 		

@@ -18,13 +18,8 @@ class HyphenationPattern
 	/** @var string Only pattern text, e.g. mis */
 	private string $patternText;
 	
+	/** @var int TYPE_REGULAR|TYPE_START|TYPE_END */
 	private int $patternType;
-	
-	/* @var bool Is it word start pattern? e.g. .mis1 */
-	//private bool $isStartPattern;
-	
-	/* @var bool Is it word end pattern? e.g. 4te. */
-	//private bool $isEndPattern;
 	
 	/** @var int Position in word at which this pattern starts */
 	private int $position;

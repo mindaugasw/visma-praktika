@@ -3,15 +3,25 @@ require_once(__DIR__."/../autoload.php");
 
 use App\Service\InputReader;
 use App\Service\OutputWriter;
+use App\Service\Profiler;
 use App\Service\SyllablesAlgorithm;
 
 $reader = new InputReader();
 $writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
 
+$patternsFile = __DIR__."/../data/text-hyphenation-patterns.txt";
+
 $args = getopt("", [InputReader::ARGS_SINGLE_INPUT."::", InputReader::ARGS_BATCH_INPUT."::", InputReader::ARGS_BATCH_OUTPUT."::"]);
-$patterns = $reader->getPatternList(__DIR__."/../data/text-hyphenation-patterns.txt");
-$patternTree = $reader->getPatternTree(__DIR__."/../data/text-hyphenation-patterns.txt");
+$patterns = $reader->getPatternList($patternsFile);
+
+Profiler::start("trie build");
+$patternTree = $reader->getPatternTree($patternsFile);
+Profiler::stopEcho("trie build");
+
+Profiler::start("trie search");
+$x = $patternTree->findMatches(".mistranslate.");
+Profiler::stopEcho("trie search");
 
 die();
 if (isset($args[InputReader::ARGS_BATCH_INPUT]))

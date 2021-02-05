@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\HyphenationPattern;
+use App\Entity\Trie\Trie;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
 use Exception;
@@ -14,12 +15,13 @@ class SyllablesAlgorithm
 	
 	/**
 	 * @param WordInput $input
-	 * @param array<HyphenationPattern> $patterns
+	 * @param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTrie is provided
+     * @param ?Trie $patternsTrie Trie tree for patterns search. Can be null if $patternsArray ir provided
 	 * @return WordResult
 	 */
-	public function processOneWord(WordInput $input, array $patterns): WordResult
+	public function processOneWord(WordInput $input, ?array $patternsArray, ?Trie $patternsTrie): WordResult
 	{
-		return $this->wordToSyllables($input, $patterns);
+		return $this->wordToSyllables($input, $patternsArray, $patternsTrie);
 	}
 	
 	/**
@@ -78,79 +80,58 @@ class SyllablesAlgorithm
 				.$badWords[$i]->result."\n";
 		}
 	}
-	
-	/**
-	 * Syllabize one word
-	 * @param WordInput $inputObj Word to syllabize
-	 * @param array<HyphenationPattern> $patterns
-	 * @return WordResult
-	 */
-	private function wordToSyllables(WordInput $inputObj, array $patterns): WordResult
+    
+    /**
+     * Syllabize one word
+     * @param WordInput $inputObj Word to syllabize
+     * @param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTrie is provided
+     * @param ?Trie $patternsTrie Trie tree for patterns search. Can be null if $patternsArray ir provided
+     * @return WordResult
+     */
+	private function wordToSyllables(WordInput $inputObj, ?array $patternsArray, ?Trie $patternsTrie = null): WordResult
 	{
 		$timer = Profiler::start();
-		
-		$inputStr = $inputObj->getInput();
 		$res = new WordResult($inputObj);
 		
-		for ($i = 0; $i < count($patterns); $i++)
-		{
-			/** @var HyphenationPattern $p Current pattern */
-			$p = clone $patterns[$i];
-			$pos = $this->findPatternInWord($inputStr, $p);
-			
-			if ($pos !== -1)
-			{
-				$p->setPosition($pos);
-				
-				$res->addMatchedPattern($p);
-				
-				$res->addToNumberMatrix($this->buildMatrixRow($inputStr, $p));
-				
-				
-				/*// map pattern numbers to specific positions in word
-				$numberMatrix = &$res->getNumberMatrix();
-				//$res->getNumberMatrix()[] = array_fill(0, strlen($inputStr), -1); // Doesn't work as array is returned by value
-				$numberMatrix[] = array_fill(0, strlen($inputStr), -1);
-				
-				$numberMatches = []; // numbers from this $p pattern, [[[number, position in pattern], [...], ]]
-				preg_match_all('/\d/', $p->getPatternNoDot(), $numberMatches, PREG_OFFSET_CAPTURE);
-				$numberMatches = $numberMatches[0]; // remove extra nesting
-				
-				for ($j = 0; $j < count($numberMatches); $j++)
-				{
-					$numberMatrix
-						[count($numberMatrix) - 1] // get last pattern row
-						[$p->getPosition() + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
-						= $numberMatches[$j][0];
-				}*/
-			}
-		}
+		if ($patternsArray !== null) { // Use pattern array for search
+		    
+            for ($i = 0; $i < count($patternsArray); $i++) {
+                /** @var HyphenationPattern $p Current pattern */
+                $p = clone $patternsArray[$i];
+                // TODO doesn't work if same pattern is multiple times in the word: only 1st occurrence is returned
+                $pos = $this->findPatternInWord($inputObj->getInput(), $p);
+                
+                if ($pos !== -1) {
+                    $p->setPosition($pos);
+                    $res->addMatchedPattern($p);
+                    $res->addToNumberMatrix(
+                        $this->buildMatrixRow($inputObj->getInput(), $p)
+                    );
+                }
+            }
+            
+        } else if ($patternsTrie !== null) { // use pattern tree for search
+		    
+		    $res->setMatchedPatterns($patternsTrie->findMatches($inputObj->getInputWithDots()));
+		    foreach ($res->getMatchedPatterns() as $pattern) {
+		        $res->addToNumberMatrix(
+		            $this->buildMatrixRow($inputObj->getInput(), $pattern)
+                );
+            }
+		    
+        } else
+            throw new Exception("No method selected for pattern search");
 		
-		$res->setResultWithNumbers(
-			$this->combineWordWithNumbers($inputStr, $res->getNumberMatrix())
-		);
-		
-		$res->setResultWithSpaces(strval(preg_replace(
-			['/[13579]/', '/[2468]/'],
-			['-', ' '],
-			$res->getResultWithNumbers()
-		))); // TODO strval remove
-		
-		$res->setResult(str_replace(' ', '', $res->getResultWithSpaces()));
-		
-		if ($res->getExpectedResult() !== null)
-			$res->setIsCorrect($res->getResult() === $res->getExpectedResult());
-		
-		$endTime = hrtime(true);
+		$this->setResultValues($res);
 		$res->setTime(Profiler::stop($timer));
-		
 		return $res;
 	}
 	
 	// Main algorithm helper methods
-	
+    
 	/**
 	 * Find if this $pattern exists in $input and return its position or -1 
+     * Causes 30-50% #performance drop comparing with inlining
 	 * @param string $input
 	 * @param HyphenationPattern $pattern
 	 * @return int Pattern position in $input or -1 if not found
@@ -199,6 +180,32 @@ class SyllablesAlgorithm
 		
 		return $matrixRow;
 	}
+    
+    /**
+     * Sets result values to $res: result, resultWithNumbers, resultWithSpaces, isCorrect.
+     * Mutates original object
+     * @param WordResult $res
+     * @return WordResult
+     */
+    private function setResultValues(WordResult $res): WordResult
+    {
+        $res->setResultWithNumbers(
+            $this->combineWordWithNumbers($res->getInput(), $res->getNumberMatrix())
+        );
+    
+        $res->setResultWithSpaces(strval(preg_replace(
+            ['/[13579]/', '/[2468]/'],
+            ['-', ' '],
+            $res->getResultWithNumbers()
+        ))); // TODO strval remove
+    
+        $res->setResult(str_replace(' ', '', $res->getResultWithSpaces()));
+    
+        if ($res->getExpectedResult() !== null)
+            $res->setIsCorrect($res->getResult() === $res->getExpectedResult());
+        
+        return $res;
+    }
 	
 	/**
 	 * Combine word with max number from each column in $numberMatrix.

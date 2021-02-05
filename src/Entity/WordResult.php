@@ -22,9 +22,6 @@ class WordResult extends WordInput
 	/** @var float Processing time, ms */
 	private float $time;
 	
-	/** @var bool Does $result match $expectedResult? */
-	private bool $isCorrect;
-	
 	
 	public function __construct(WordInput $input)
 	{
@@ -44,6 +41,7 @@ class WordResult extends WordInput
 	}
 	
 	/**
+     * Final result - word divided into syllables, e.g. mis-trans-late
 	 * @param string $result
 	 */
 	public function setResult(string $result): void
@@ -61,6 +59,7 @@ class WordResult extends WordInput
 	}
 	
 	/**
+     * Result with spaces, e.g. m i s-t r a n s-l a t e
 	 * @param string $resultWithSpaces
 	 */
 	public function setResultWithSpaces(string $resultWithSpaces): void
@@ -78,6 +77,7 @@ class WordResult extends WordInput
 	}
 	
 	/**
+     * Result with numbers, e.g. m2i s1t4r a2n2s3l2a4t e
 	 * @param string $resultWithNumbers
 	 */
 	public function setResultWithNumbers(string $resultWithNumbers): void
@@ -86,7 +86,7 @@ class WordResult extends WordInput
 	}
 	
 	/**
-	 * All patterns found in this word
+	 * Get all patterns found in this word
 	 * @return array<HyphenationPattern>
 	 */
 	public function getMatchedPatterns(): array
@@ -95,12 +95,22 @@ class WordResult extends WordInput
 	}
 	
 	/**
+     * Add a single matched pattern to the array
 	 * @param HyphenationPattern $pattern
 	 */
 	public function addMatchedPattern(HyphenationPattern $pattern): void
 	{
 		$this->matchedPatterns[] = $pattern;
 	}
+    
+    /**
+     * Set whole array of matched patterns
+     * @param array<HyphenationPattern> $patterns
+     */
+	public function setMatchedPatterns(array $patterns): void
+    {
+        $this->matchedPatterns = $patterns;
+    }
 	
 	/**
 	 * Numbers from patterns placed in their respective positions in the word
@@ -112,6 +122,7 @@ class WordResult extends WordInput
 	}
 	
 	/**
+     * Add a single row to the number matrix
 	 * @param array<int> $matrixRow
 	 */
 	public function addToNumberMatrix(array $matrixRow): void
@@ -129,6 +140,7 @@ class WordResult extends WordInput
 	}
 	
 	/**
+     * Processing time, ms
 	 * @param float $time
 	 */
 	public function setTime(float $time): void
@@ -142,15 +154,7 @@ class WordResult extends WordInput
 	 */
 	public function isCorrect(): bool
 	{
-		return $this->isCorrect;
-	}
-	
-	/**
-	 * @param bool $isCorrect
-	 */
-	public function setIsCorrect(bool $isCorrect): void
-	{
-		$this->isCorrect = $isCorrect;
+		return $this->result === $this->getExpectedResult();
 	}
 	
 }

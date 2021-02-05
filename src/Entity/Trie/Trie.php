@@ -4,11 +4,14 @@ namespace App\Entity\Trie;
 // https://www.toptal.com/java/the-trie-a-neglected-data-structure
 class Trie
 {
-    public const SEARCH_BY_CHAR = 1;
-    public const SEARCH_BY_WORD = 2;
+    //public const SEARCH_BY_CHAR = 1; // TODO
+    //public const SEARCH_BY_WORD = 2;
     
     private Node $rootNode;
     //private array $children;
+    
+    //private int $totalNodes; // TODO
+    //private int $totalEndNodes;
     
     public function __construct()
     {
@@ -31,16 +34,16 @@ class Trie
     
     /**
      * Add a possible return value to the tree
-     * @param string $textPath
+     * @param string $fullPath
      * @param object $value
      */
-    public function addValue(string $textPath, object $value)
+    public function addValue(string $fullPath, object $value)
     {
         //$this->rootNode->
         
-        $pathChar = substr($textPath, 0, 1);
+        $pathChar = substr($fullPath, 0, 1);
         //$currentPath = $textPath;
-        $nextPath = substr($textPath, 1);
+        $nextPath = substr($fullPath, 1);
         
         $node = $this->rootNode;
         
@@ -53,13 +56,24 @@ class Trie
             // check if node with current path char already exists
             // iterating backwards for better performance, as all patters should be sorted alphabetically
             $continueWhile = false;
+            $breakWhile = false;
+            
             for ($i = count($node->children) - 1; $i >= 0; $i--) {
                 if ($node->children[$i]->pathChar === $pathChar) {
                     $node = $node->children[$i];
                     $continueWhile = true;
+    
+                    if (strlen($nextPath) !== 0) {
+                        $pathChar = substr($nextPath, 0, 1);
+                        $nextPath = substr($nextPath, 1);
+                    } else
+                        $breakWhile = true;
+                    
                     break;
                 }
             }
+            if ($breakWhile)
+                break;
             if ($continueWhile)
                 continue;
             

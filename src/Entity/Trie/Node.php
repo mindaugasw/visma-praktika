@@ -69,7 +69,7 @@ class Node
     
     public function view()
     {
-        $str = str_repeat('  ', $this->depth).$this->pathChar."\n";
+        $str = str_repeat('    ', $this->depth - 1).$this->pathChar."\n";
         foreach ($this->children as $child) {
             $str .= $child->view();
         }

@@ -1,4 +1,5 @@
 /vendor/
+/var/
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,phpstorm
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,phpstorm

@@ -6,6 +6,7 @@ use App\Entity\HyphenationPattern;
 use App\Entity\Trie\Trie;
 use App\Entity\WordInput;
 use App\Exception\NotImplementedException;
+use App\Service\PsrLogger\LoggerInterface;
 use Exception;
 use SplFileObject;
 
@@ -19,7 +20,13 @@ class InputReader
 	const ARGS_SEARCH_METHOD_ARRAY = "array";
 	const ARGS_SEARCH_METHOD_TREE = "tree";
     
+	private LoggerInterface $logger;
 	
+	public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+    
     /**
      * Determine search method to use.
      * User-defined method has highest priority.

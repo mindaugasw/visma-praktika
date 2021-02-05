@@ -4,24 +4,24 @@ namespace App\Entity\Trie;
 // What is Trie: https://uploads.toptal.io/blog/image/106/toptal-blog-3_F.png
 class Trie
 {
-    public Node $rootNode;
-    
-    private int $totalNodes = 0;
-    private int $totalEndNodes = 0;
+    private Node $rootNode;
+    private int $nodesCount = 0;
+    private int $endNodesCount = 0;
     
     public function __construct()
     {
-        $this->rootNode = new Node("", null, 0, false);
+        $this->rootNode = new Node("", "");
     }
     
     /**
      * Get array of all matches for given text
-     * //param int $searchType Search can be performed by word or by character. Use SEARCH_BY_CHAR|SEARCH_BY_WORD
+     * @param string $input
+     * @return array Array of $value from matched end nodes
      */
     public function findMatches(string $input)
     {
         $matches = []; // stores $value from matched endNodes
-        $nodesTraversed = 0;
+        $nodesSearched = 0;
         
         // perform search from each character
         for ($i = 0; $i < strlen($input); $i++) {
@@ -33,7 +33,7 @@ class Trie
                 $char = substr($remainingInput, 0, 1);
                 $remainingInput = substr($remainingInput, 1);
     
-                $nodesTraversed++;
+                $nodesSearched++;
     
                 $deeperNode = $node->findDeeperNode($char);
                 $node = $deeperNode;
@@ -41,8 +41,8 @@ class Trie
                 if ($deeperNode === false)
                     break;
                 
-                if ($deeperNode->isEndNode) {
-                    $match = clone $deeperNode->value;
+                if ($deeperNode->isEndNode()) {
+                    $match = clone $deeperNode->getValue();
                     $match->setPosition(max($i - 1, 0)); // -1 to compensate for added dot at word start
                     $matches[] = $match;
                 }
@@ -50,10 +50,9 @@ class Trie
                 if (strlen($remainingInput) === 0)
                     break;
             }
-            
         }
         
-        echo "Nodes searched: $nodesTraversed\n";
+        //echo "Nodes searched: $nodesSearched\n";
         return $matches;
     }
     
@@ -62,63 +61,39 @@ class Trie
      * @param string $fullPath Search string, i.e. full path towards end node
      * @param object $value Value that will be returned when this pattern matches
      */
-    public function addValue(string $fullPath, object $value)
+    public function addValue(string $fullPath, object $value): void
     {
-        [$pathChar, $nextPath] = $this->advancePathStrings($fullPath);
-    
+        [$pathChar, $remainingPath] = $this->advancePathStrings($fullPath);
         $node = $this->rootNode;
         
         while (true) {
+            $deeperNode = $node->findDeeperNode($pathChar); // ~25% #performance drop cuz of inlining
             
-            $continueWhile = false;
-    
-            $deeperNode = $node->findDeeperNode($pathChar);
-            if ($deeperNode !== null) { // continue search deeper
+            if ($deeperNode !== false) { // continue search deeper
                 $node = $deeperNode;
     
-                if (strlen($nextPath) === 0)
+                if (strlen($remainingPath) === 0)
                     throw new \Exception("Algorithm error while adding \"$fullPath\" to the trie");
     
-                [$pathChar, $nextPath] = $this->advancePathStrings($nextPath);
-                continue;
-            } else { // create new node and continue search in it
+                [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
                 
-            }
-            
-            for ($i = count($node->children) - 1; $i >= 0; $i--) {
-                if ($node->children[$i]->pathChar === $pathChar) {
-                    $node = $node->children[$i];
-                    $continueWhile = true;
+            } else { // create new node and continue search in it (if not end node)
+                
+                $newNode = new Node($pathChar, substr($fullPath, 0, $node->getDepth() + 1));
+                $node->addChild($newNode);
+                $node = $newNode;
+                $this->nodesCount++; 
     
-                    if (strlen($nextPath) === 0)
-                        throw new \Exception("Algorithm error while adding \"$fullPath\" to the trie");
-                    
-                    [$pathChar, $nextPath] = $this->advancePathStrings($nextPath);
+                if (strlen($remainingPath) !== 0) { // continue search deeper
+                    [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
+                } else { // is end node
+                    $newNode->setIsEndNode(true);
+                    $newNode->setValue($value);
+                    $this->endNodesCount++;
                     break;
                 }
             }
-            if ($continueWhile)
-                continue;
-            
-            
-            // create new node
-            $newNode = new Node($pathChar, null, $node->depth + 1, false);
-            $newNode->fullPath = substr($fullPath, 0, $newNode->depth);
-            $node->children[] = $newNode;
-            $node = $newNode;
-            $this->totalNodes++;
-            
-            if (strlen($nextPath) !== 0) {
-                [$pathChar, $nextPath] = $this->advancePathStrings($nextPath);
-            } else {
-                $newNode->isEndNode = true;
-                $newNode->value = $value;
-                $this->totalEndNodes++;
-                break;
-            }
-            
         }
-        
     }
     
     /**
@@ -137,4 +112,22 @@ class Trie
             substr($remainingPath, 1),      // next $remainingPath
         ];
     }
+    
+    
+    /**
+     * @return int
+     */
+    public function getNodesCount(): int
+    {
+        return $this->nodesCount;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getEndNodesCount(): int
+    {
+        return $this->endNodesCount;
+    }
+    
 }

@@ -12,21 +12,29 @@ $alg = new SyllablesAlgorithm();
 
 $patternsFile = __DIR__."/../data/text-hyphenation-patterns.txt";
 
-$args = getopt("", [InputReader::ARGS_SINGLE_INPUT."::", InputReader::ARGS_BATCH_INPUT."::", InputReader::ARGS_BATCH_OUTPUT."::"]);
-$patterns = $reader->getPatternList($patternsFile);
+$args = getopt("", [
+    InputReader::ARGS_SINGLE_INPUT."::",
+    InputReader::ARGS_BATCH_INPUT."::",
+    InputReader::ARGS_BATCH_OUTPUT."::",
+    InputReader::ARGS_SEARCH_METHOD."::"
+]);
 
-Profiler::start("trie build");
-$patternTree = $reader->getPatternTree($patternsFile);
-Profiler::stopEcho("trie build");
+$method = $reader->getSearchMethod($args);
+echo "Using $method method.\n";
+$patternsArray = null;
+$patternsTrie = null;
+if ($method === InputReader::ARGS_SEARCH_METHOD_ARRAY)
+    $patternsArray = $reader->getPatternList($patternsFile);
+else {
+    Profiler::start("Trie build");
+    $patternsTrie = $reader->getPatternTrie($patternsFile);
+    Profiler::stopEcho("Trie build");
+}
 
-Profiler::start("trie search");
-$x = $patternTree->findMatches(".mistranslate.");
-Profiler::stopEcho("trie search");
 
-die();
 if (isset($args[InputReader::ARGS_BATCH_INPUT]))
 {
-	if (!file_exists($args[InputReader::ARGS_BATCH_INPUT]))
+	/*if (!file_exists($args[InputReader::ARGS_BATCH_INPUT]))
 		throw new Exception("Input file not found");
 	if (!isset($args[InputReader::ARGS_BATCH_OUTPUT]))
 		throw new Exception("Output file argument missing");
@@ -35,17 +43,15 @@ if (isset($args[InputReader::ARGS_BATCH_INPUT]))
 	$words = $reader->getWordList($args[InputReader::ARGS_BATCH_INPUT]);
 	$alg->processBatch($words, $patterns, $args[InputReader::ARGS_BATCH_OUTPUT]);
 	
-	return;
-}
-else
-{
+	return;*/
+} else {
 	while (true)
 	{
 		$word = $reader->getSingleWordInput($args);
 		if ($word === false)
 			return;
 		
-		$res = $alg->processOneWord($word, $patterns);
+		$res = $alg->processOneWord($word, $patternsArray, $patternsTrie);
 		$writer->printOneWordResultToConsole($res);
 	}
 }

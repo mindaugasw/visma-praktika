@@ -10,6 +10,9 @@ class WordInput
 	/** @var string Original word with spaces, e.g. m i s t r a n s l a t e */
 	private string $inputWithSpaces;
 	
+	/** @var string Original word with leading and trailing dots, e.g. .mistranslate. */
+	private string $inputWithDots;
+	
 	/* @var string Expected result with which actual result will be compared */
 	private string $expectedResult;
 	
@@ -17,6 +20,7 @@ class WordInput
 	{
 		$this->input = $input;
 		$this->inputWithSpaces = chunk_split($input, 1, ' ');
+		$this->inputWithDots = ".$input.";
 		
 		if ($expectedResult !== null)
 			$this->expectedResult = $expectedResult;
@@ -39,7 +43,16 @@ class WordInput
 	{
 		return $this->inputWithSpaces;
 	}
-		
+    
+    /**
+     * Original word with leading and trailing dots, e.g. .mistranslate.
+     * @return string
+     */
+	public function getInputWithDots(): string
+    {
+        return $this->inputWithDots;
+    }
+	
 	/**
 	 * Expected result with which actual result will be compared.
 	 * Can be null.

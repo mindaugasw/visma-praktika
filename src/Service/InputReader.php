@@ -5,14 +5,48 @@ namespace App\Service;
 use App\Entity\HyphenationPattern;
 use App\Entity\Trie\Trie;
 use App\Entity\WordInput;
+use App\Exception\NotImplementedException;
 use Exception;
 use SplFileObject;
 
 class InputReader
 {
+    // cli argument keys/values
 	const ARGS_SINGLE_INPUT = "input";
 	const ARGS_BATCH_INPUT = "batch";
 	const ARGS_BATCH_OUTPUT = "batchOutput";
+	const ARGS_SEARCH_METHOD = "method";
+	const ARGS_SEARCH_METHOD_ARRAY = "array";
+	const ARGS_SEARCH_METHOD_TREE = "tree";
+    
+	
+    /**
+     * Determine search method to use.
+     * User-defined method has highest priority.
+     * Otherwise chooses array for one word and tree for batch processing.
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    public function getSearchMethod(array $args): string
+    {
+        // user-defined method has highest priority
+        if (isset($args[self::ARGS_SEARCH_METHOD])) {
+            $method = $args[self::ARGS_SEARCH_METHOD];
+            if ($method !== self::ARGS_SEARCH_METHOD_ARRAY && $method !== self::ARGS_SEARCH_METHOD_TREE)
+                throw new Exception("Unknown search method \"$method\"");
+            else
+                return $method;
+        }
+        
+        // for batch processing use tree - long build time, quick each word processing
+        if (isset($args[self::ARGS_BATCH_INPUT]))
+            return self::ARGS_SEARCH_METHOD_TREE;
+        
+        // for single word use array - longer each word processing
+        //if (isset($args[self::ARGS_SINGLE_INPUT])) // default value
+        return self::ARGS_SEARCH_METHOD_ARRAY;
+    }
 	
 	public function getPatternList(string $path)
 	{
@@ -25,7 +59,7 @@ class InputReader
 		return $patterns;
 	}
 	
-	public function getPatternTree(string $path): Trie
+	public function getPatternTrie(string $path): Trie
     {
         $tree = new Trie();
         
@@ -44,7 +78,6 @@ class InputReader
         while (!$file->eof())
         {
             $line = trim($file->fgets());
-            //$patterns[] = new HyphenationPattern($line);
             $callback($line);
         }
     }

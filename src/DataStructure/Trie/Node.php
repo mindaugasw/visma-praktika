@@ -40,8 +40,12 @@ class Node
      */
     public function __toString()
     {
-        $str = str_repeat('    ', $this->depth - 1)
-            .$this->pathChar.($this->isEndNode ? "#" : "")."\n";
+        $str = sprintf(
+            "%s%s%s\n",
+            str_repeat('    ', $this->depth - 1),
+            $this->pathChar,
+            $this->isEndNode ? "#" : ""
+        );
         
         foreach ($this->children as $child) {
             $str .= $child->view();
@@ -59,7 +63,7 @@ class Node
     public function findDeeperNode(string $pathChar)
     {
         if (empty($pathChar))
-            throw new Exception("Can't search for empty string");
+            throw new Exception('Can\'t search for empty string');
         
         for ($i = 0, $length = count($this->children); $i < $length; $i++) {
             if ($this->children[$i]->pathChar === $pathChar)
@@ -113,7 +117,7 @@ class Node
     public function getValue(): object
     {
         if (!isset($this->value))
-            throw new Exception("Tried getting unset value on node \"".$this->fullPath."\"");
+            throw new Exception(sprintf('Tried getting unset value on node "%s"', $this->fullPath));
         
         return $this->value;
     }

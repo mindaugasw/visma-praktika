@@ -20,7 +20,7 @@ class WordInput
 	{
 		$this->input = $input;
 		$this->inputWithSpaces = chunk_split($input, 1, ' ');
-		$this->inputWithDots = ".$input.";
+		$this->inputWithDots = sprintf('.%s.', $input);
 		
 		if ($expectedResult !== null)
 			$this->expectedResult = $expectedResult;

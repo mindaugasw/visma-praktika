@@ -15,7 +15,7 @@ class FileHandler
         $dirname = dirname($filePath);
         
         if (!file_exists($dirname) && !mkdir($dirname, 0777, true))
-            throw new \Exception("Could not create log file directory \"$dirname\"");
+            throw new \Exception(sprintf('Could not create log file directory "%s"', $dirname));
      
         return new \SplFileObject($filePath, $mode);
     }

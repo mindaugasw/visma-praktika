@@ -53,7 +53,7 @@ class SyllablesAlgorithm
             }
 		    
         } else
-            throw new Exception("No method selected for pattern search");
+            throw new Exception('No method selected for pattern search');
 		
 		$this->setResultValues($res);
 		$res->setTime(Profiler::stop($timer));

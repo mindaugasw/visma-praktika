@@ -1,9 +1,9 @@
 <?php
 require_once(__DIR__.'/../autoload.php');
 
+use App\Command\BatchProcess;
 use App\Command\InteractiveInput;
 use App\Command\TextBlockInput;
-use App\Exception\NotImplementedException;
 use App\Service\FileHandler;
 use App\Service\InputReader;
 use App\Service\OutputWriter;
@@ -28,7 +28,7 @@ switch ($command) {
         (new TextBlockInput($reader, $alg, $fileHandler))->process();
         break;
     case 'batch':
-        throw new NotImplementedException();
+        (new BatchProcess($reader, $alg, $fileHandler))->process();
     default:
         throw new Exception(sprintf('Unknown command "%s"', $command));
 }

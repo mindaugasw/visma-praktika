@@ -10,39 +10,39 @@ use SplFileObject;
 
 class InputReader
 {
-    const PATTERNS_FILE = __DIR__."/../../data/text-hyphenation-patterns.txt";
+    const PATTERNS_FILE = __DIR__.'/../../data/text-hyphenation-patterns.txt';
     
     // cli args keys
-    const ARGS_COMMAND = "command";
-    const ARGS_SINGLE_INPUT = "input";
-    const ARGS_FILE_INPUT = "file";
-    const ARGS_FILE_OUTPUT = "output";
-    const ARGS_METHOD = "method";
+    const ARGS_COMMAND = 'command';
+    const ARGS_SINGLE_INPUT = 'input';
+    const ARGS_FILE_INPUT = 'file';
+    const ARGS_FILE_OUTPUT = 'output';
+    const ARGS_METHOD = 'method';
     
     private array $argsConfig = [
         self::ARGS_COMMAND => [
-            "long" => "command",
-            "short" => "c",
+            'long' => 'command',
+            'short' => 'c',
         ],
         self::ARGS_SINGLE_INPUT => [ // console input for single word/text
-            "long" => "input",
-            "short" => "i",
+            'long' => 'input',
+            'short' => 'i',
         ],
         self::ARGS_FILE_INPUT => [ // file path
-            "long" => "file",
-            "short" => "f",
+            'long' => 'file',
+            'short' => 'f',
         ],
-        //"batch" => [] // batch input
+        //'batch' => [] // batch input
         self::ARGS_FILE_OUTPUT => [ // output file
-            "long" => "output",
-            "short" => "o",
+            'long' => 'output',
+            'short' => 'o',
         ],
         self::ARGS_METHOD => [ // pattern search method
-            "long" => "method",
-            "short" => "m",
-            "values" => [
-                "array",
-                "tree",
+            'long' => 'method',
+            'short' => 'm',
+            'values' => [
+                'array',
+                'tree',
             ],
         ],
     ];
@@ -72,10 +72,10 @@ class InputReader
     {
         return $this->args[self::ARGS_FILE_OUTPUT];
     }
-    public function getArg_method(string $default = "array"): string
+    public function getArg_method(string $default = 'array'): string
     {
-        if (!in_array($default, ["array", "tree"]))
-            throw new Exception("Unsupported method \"$default\"");
+        if (!in_array($default, ['array', 'tree']))
+            throw new Exception(sprintf('Unsupported method "%s"', $default));
         
         if ($this->args[self::ARGS_METHOD] !== null)
             return $this->args[self::ARGS_METHOD];
@@ -109,13 +109,15 @@ class InputReader
     {
         if ($this->patternTree !== null)
             return $this->patternTree;
-        
+    
+        Profiler::start("tree build");
         $tree = new Trie();
         
         $this->readPatternsFile(self::PATTERNS_FILE, function (string $line) use ($tree) {
             $pattern = new HyphenationPattern($line);
             $tree->addValue($pattern->getPatternNoNumbers(), $pattern);
         });
+        Profiler::stopEcho("tree build");
         
         $this->patternTree = $tree;
         return $tree;

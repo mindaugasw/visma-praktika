@@ -10,7 +10,7 @@ class Trie
     
     public function __construct()
     {
-        $this->rootNode = new Node("", "");
+        $this->rootNode = new Node('', '');
     }
     
     /**
@@ -73,7 +73,7 @@ class Trie
                 $node = $deeperNode;
     
                 if (strlen($remainingPath) === 0)
-                    throw new \Exception("Algorithm error while adding \"$fullPath\" to the trie");
+                    throw new \Exception(sprintf('Algorithm error while adding "%s" to the tree', $fullPath));
     
                 [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
                 

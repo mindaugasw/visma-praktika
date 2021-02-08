@@ -5,17 +5,17 @@ use App\Service\FileHandler;
 
 class Logger extends AbstractLogger
 {
-    private const DATETIME_FORMAT = "Y-m-d H:i:s";
+    private const DATETIME_FORMAT = 'Y-m-d H:i:s';
     
     private FileHandler $fileHandler;
     
     private \SplFileObject $logFile;
     
-    public function __construct(FileHandler $fileHandler, string $logFile = "log.txt")
+    public function __construct(FileHandler $fileHandler, string $logFile = 'log.txt')
     {
         $this->fileHandler = $fileHandler;
         
-        $fullPath = __DIR__."/../../../var/log/".$logFile;
+        $fullPath = sprintf('%s/../../../var/log/%s', __DIR__, $logFile);
         $this->logFile = $fileHandler->openWithMkdir($fullPath, 'a');
     }
     
@@ -31,9 +31,12 @@ class Logger extends AbstractLogger
     public function log($level, $message, array $context = [])
     {
         $this->logFile->fwrite(
-            strtoupper($level)." @ "
-            .date(self::DATETIME_FORMAT).": "
-            .$this->interpolate($message, $context)."\n\n"
+            sprintf(
+                "%s @ %s: %s\n\n",
+                strtoupper($level), 
+                date(self::DATETIME_FORMAT),
+                $this->interpolate($message, $context)
+            )
         );
     }
     

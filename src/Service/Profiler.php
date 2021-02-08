@@ -33,12 +33,12 @@ class Profiler
 	 * @param string $units ns|ms|s
 	 * @return float Execution time
 	 */
-	public static function stop($key, string $units="ms"): float
+	public static function stop($key, string $units = 'ms'): float
 	{
 		$endTime = hrtime(true);
 		
 		if (!key_exists($key, self::$timers))
-			throw new Exception("Key \"$key\" does not exist");
+			throw new Exception(sprintf('Key "%s" does not exist', $key));
 		
 		return ($endTime - self::$timers[$key]) / self::unitsToDivisor($units);
 	}
@@ -50,10 +50,10 @@ class Profiler
 	 * @return float
 	 * @throws Exception
 	 */
-	public static function stopEcho($key, string $units="ms"): float
+	public static function stopEcho($key, string $units = 'ms'): float
 	{
 		$value = self::stop($key, $units);
-		echo "Time @ $key: $value $units\n";
+		echo sprintf("Time @ %s: %f %s\n", $key, $value, $units);
 		return $value;
 	}
 	
@@ -82,10 +82,10 @@ class Profiler
 	 * @return float
 	 * @throws Exception
 	 */
-	public static function pausedGet($key, string $units="ms"): float
+	public static function pausedGet($key, string $units = 'ms'): float
 	{
 		if (!key_exists($key, self::$partialTimes))
-			throw new Exception("Key \"$key\" does not exist");
+			throw new Exception(sprintf('Key "%s" does not exist', $key));
 		
 		return self::$partialTimes[$key] / self::unitsToDivisor($units);
 	}
@@ -97,11 +97,13 @@ class Profiler
 	 * @param string $units
 	 * @throws Exception
 	 */
-	public static function pausedEcho($key, string $units="ms")
+	public static function pausedEcho($key, string $units = 'ms')
 	{
-		echo "Combined time @ $key: "
-			.self::pausedGet($key, $units)
-			." $units\n";
+		echo sprintf(
+		    "Combined time @ %s: %f %s\n",
+            $key,
+            self::pausedGet($key, $units), $units
+        );
 	}
 	
 	

@@ -1,23 +1,22 @@
 <?php
 namespace App\Service\PsrLogger;
 
+use App\Service\FileHandler;
+
 class Logger extends AbstractLogger
 {
-    //private const DATE_FORMAT = "Y-m-d";
-    //private const TIME_FORMAT = "H:i:s";
     private const DATETIME_FORMAT = "Y-m-d H:i:s";
+    
+    private FileHandler $fileHandler;
     
     private \SplFileObject $logFile;
     
-    public function __construct($logFile = "log.txt")
+    public function __construct(FileHandler $fileHandler, string $logFile = "log.txt")
     {
-        $fullPath = __DIR__."/../../../var/log/".$logFile;
-        $dirname = dirname($fullPath);
+        $this->fileHandler = $fileHandler;
         
-        if (!file_exists($dirname) && !mkdir($dirname, 0777, true))
-            throw new \Exception("Could not create log file directory \"$dirname\"");
-            
-        $this->logFile = new \SplFileObject($fullPath, "a");
+        $fullPath = __DIR__."/../../../var/log/".$logFile;
+        $this->logFile = $fileHandler->openWithMkdir($fullPath, 'a');
     }
     
     /**

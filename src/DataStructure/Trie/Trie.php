@@ -1,5 +1,5 @@
 <?php
-namespace App\Entity\Trie;
+namespace App\DataStructure\Trie;
 
 // What is Trie: https://uploads.toptal.io/blog/image/106/toptal-blog-3_F.png
 class Trie

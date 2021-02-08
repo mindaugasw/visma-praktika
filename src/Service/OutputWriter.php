@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\WordResult;
+use App\Exception\NotImplementedException;
 
 class OutputWriter
 {
@@ -28,6 +29,7 @@ class OutputWriter
 	
 	public function writeBatchOutputToFile(array $words, string $outputFilePath)
 	{
+	    throw new NotImplementedException();
 		// TODO
 		//$outputFile = new SplFileObject($outputFilePath, "w");
 		//$outputFile->fwrite("input,expectedResult,actualResult,isCorrect\n");

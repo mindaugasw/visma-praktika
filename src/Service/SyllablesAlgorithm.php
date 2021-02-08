@@ -3,92 +3,25 @@
 namespace App\Service;
 
 use App\Entity\HyphenationPattern;
-use App\Entity\Trie\Trie;
+use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
+use App\Exception\NotImplementedException;
 use Exception;
 use SplFileObject;
 
 class SyllablesAlgorithm
 {
-	private const ITEMS_IN_ONE_BATCH = 100;
+	//private const ITEMS_IN_ONE_BATCH = 100;
 	
-	/**
-	 * @param WordInput $input
-	 * @param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTrie is provided
-     * @param ?Trie $patternsTrie Trie tree for patterns search. Can be null if $patternsArray ir provided
-	 * @return WordResult
-	 */
-	public function processOneWord(WordInput $input, ?array $patternsArray, ?Trie $patternsTrie): WordResult
-	{
-		return $this->wordToSyllables($input, $patternsArray, $patternsTrie);
-	}
-	
-	/**
-	 * @param array<WordInput> $words
-	 * @param array<HyphenationPattern> $patterns
-	 * @param string $outputFilePath
-	 */
-	public function processBatch(array $words, array $patterns, string $outputFilePath)
-	{
-		/** @var array<WordResult> $outputWords */
-		$outputWords = [];
-		/** @var array<WordResult> WordResult $badWords */
-		$badWords = [];
-		
-		$count = count($words);
-		
-		echo "Batch processing $count words, output in $outputFilePath\n\n"
-			."Items done, time taken, +correct -incorrect\n";;
-		
-		$good = 0;
-		$bad = 0;
-		$startTime = hrtime(true);
-		
-		for ($i = 0; $i < $count; $i++)
-		{
-			// Pause processing to print out intermediate results
-			if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
-			{
-				$endTime = hrtime(true);
-				$totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S; // TODO fix using Profiler
-				
-				echo "$i/$count, took $totalTime s, +$good -$bad\n";
-				$good = 0;
-				$bad = 0;
-				
-				$startTime = hrtime(true);
-			}
-			
-			$res = $this->wordToSyllables($words[$i], $patterns);
-			
-			if ($res->isCorrect())
-				$good++;
-			else
-			{
-				$bad++;
-				$badWords[] = $res;
-			}
-			$outputWords[] = $res;
-		}
-		
-		echo "\nCompleted. Bad words (".count($badWords).", shown up to 30):\nInput, Expected, Actual:\n";
-		for ($i = 0; $i < min(count($badWords), 30); $i++)
-		{
-			echo $badWords[$i]->input.", "
-				.$badWords[$i]->expectedResult.", "
-				.$badWords[$i]->result."\n";
-		}
-	}
-    
     /**
      * Syllabize one word
      * @param WordInput $inputObj Word to syllabize
-     * @param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTrie is provided
-     * @param ?Trie $patternsTrie Trie tree for patterns search. Can be null if $patternsArray ir provided
+     * @param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTree is provided
+     * @param ?Trie $patternsTree Tree for patterns search. Can be null if $patternsArray ir provided
      * @return WordResult
      */
-	private function wordToSyllables(WordInput $inputObj, ?array $patternsArray, ?Trie $patternsTrie = null): WordResult
+	public function wordToSyllables(WordInput $inputObj, ?array $patternsArray, ?Trie $patternsTree = null): WordResult
 	{
 		$timer = Profiler::start();
 		$res = new WordResult($inputObj);
@@ -110,9 +43,9 @@ class SyllablesAlgorithm
                 }
             }
             
-        } else if ($patternsTrie !== null) { // use pattern tree for search
+        } else if ($patternsTree !== null) { // use pattern tree for search
 		    
-		    $res->setMatchedPatterns($patternsTrie->findMatches($inputObj->getInputWithDots()));
+		    $res->setMatchedPatterns($patternsTree->findMatches($inputObj->getInputWithDots()));
 		    foreach ($res->getMatchedPatterns() as $pattern) {
 		        $res->addToNumberMatrix(
 		            $this->buildMatrixRow($inputObj->getInput(), $pattern)
@@ -126,6 +59,65 @@ class SyllablesAlgorithm
 		$res->setTime(Profiler::stop($timer));
 		return $res;
 	}
+    
+    /**
+     * @param array<WordInput> $words
+     * @param array<HyphenationPattern> $patterns
+     * @param string $outputFilePath
+     */
+    public function processBatch(array $words, array $patterns, string $outputFilePath)
+    {
+        throw new NotImplementedException();
+        
+        /** @var array<WordResult> $outputWords */
+        $outputWords = [];
+        /** @var array<WordResult> WordResult $badWords */
+        $badWords = [];
+        
+        $count = count($words);
+        
+        echo "Batch processing $count words, output in $outputFilePath\n\n"
+            ."Items done, time taken, +correct -incorrect\n";;
+        
+        $good = 0;
+        $bad = 0;
+        $startTime = hrtime(true);
+        
+        for ($i = 0; $i < $count; $i++)
+        {
+            // Pause processing to print out intermediate results
+            if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
+            {
+                $endTime = hrtime(true);
+                $totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S; // TODO fix using Profiler
+                
+                echo "$i/$count, took $totalTime s, +$good -$bad\n";
+                $good = 0;
+                $bad = 0;
+                
+                $startTime = hrtime(true);
+            }
+            
+            $res = $this->wordToSyllables($words[$i], $patterns);
+            
+            if ($res->isCorrect())
+                $good++;
+            else
+            {
+                $bad++;
+                $badWords[] = $res;
+            }
+            $outputWords[] = $res;
+        }
+        
+        echo "\nCompleted. Bad words (".count($badWords).", shown up to 30):\nInput, Expected, Actual:\n";
+        for ($i = 0; $i < min(count($badWords), 30); $i++)
+        {
+            echo $badWords[$i]->input.", "
+                .$badWords[$i]->expectedResult.", "
+                .$badWords[$i]->result."\n";
+        }
+    }
 	
 	// Main algorithm helper methods
     
@@ -173,6 +165,7 @@ class SyllablesAlgorithm
 		// add numbers to correct places in the row
 		for ($j = 0; $j < count($numberMatches); $j++)
 		{
+		    // TODO skip last index number? Would prevent hyphen-at-word-end bugs (e.g. 
 			$matrixRow
 				[$pattern->getPosition() + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
 				= $numberMatches[$j][0];
@@ -201,9 +194,6 @@ class SyllablesAlgorithm
     
         $res->setResult(str_replace(' ', '', $res->getResultWithSpaces()));
     
-        if ($res->getExpectedResult() !== null)
-            $res->setIsCorrect($res->getResult() === $res->getExpectedResult());
-        
         return $res;
     }
 	

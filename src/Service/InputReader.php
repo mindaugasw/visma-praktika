@@ -3,82 +3,150 @@
 namespace App\Service;
 
 use App\Entity\HyphenationPattern;
-use App\Entity\Trie\Trie;
+use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
-use App\Exception\NotImplementedException;
-use App\Service\PsrLogger\LoggerInterface;
 use Exception;
 use SplFileObject;
 
 class InputReader
 {
-    // cli argument keys/values
-	const ARGS_SINGLE_INPUT = "input";
-	const ARGS_BATCH_INPUT = "batch";
-	const ARGS_BATCH_OUTPUT = "batchOutput";
-	const ARGS_SEARCH_METHOD = "method";
-	const ARGS_SEARCH_METHOD_ARRAY = "array";
-	const ARGS_SEARCH_METHOD_TREE = "tree";
+    const PATTERNS_FILE = __DIR__."/../../data/text-hyphenation-patterns.txt";
     
-	private LoggerInterface $logger;
+    // cli args keys
+    const ARGS_COMMAND = "command";
+    const ARGS_SINGLE_INPUT = "input";
+    const ARGS_FILE_INPUT = "file";
+    const ARGS_FILE_OUTPUT = "output";
+    const ARGS_METHOD = "method";
+    
+    private array $argsConfig = [
+        self::ARGS_COMMAND => [
+            "long" => "command",
+            "short" => "c",
+        ],
+        self::ARGS_SINGLE_INPUT => [ // console input for single word/text
+            "long" => "input",
+            "short" => "i",
+        ],
+        self::ARGS_FILE_INPUT => [ // file path
+            "long" => "file",
+            "short" => "f",
+        ],
+        //"batch" => [] // batch input
+        self::ARGS_FILE_OUTPUT => [ // output file
+            "long" => "output",
+            "short" => "o",
+        ],
+        self::ARGS_METHOD => [ // pattern search method
+            "long" => "method",
+            "short" => "m",
+            "values" => [
+                "array",
+                "tree",
+            ],
+        ],
+    ];
+	private array $args;
+    
+    private ?array $patternList = null;
+	private ?Trie $patternTree = null;
 	
-	public function __construct(LoggerInterface $logger)
+	public function __construct()
     {
-        $this->logger = $logger;
+        $this->args = $this->buildArgsArray($this->argsConfig);
+    }
+	
+    public function getArg_command(): ?string
+    {
+        return $this->args[self::ARGS_COMMAND];
+    }
+    public function getArg_singleInput(): ?string
+    {
+        return $this->args[self::ARGS_SINGLE_INPUT];
+    }
+    public function getArg_fileInput(): ?string
+    {
+        return $this->args[self::ARGS_FILE_INPUT];
+    }
+    public function getArg_fileOutput(): ?string
+    {
+        return $this->args[self::ARGS_FILE_OUTPUT];
+    }
+    public function getArg_method(string $default = "array"): string
+    {
+        if (!in_array($default, ["array", "tree"]))
+            throw new Exception("Unsupported method \"$default\"");
+        
+        if ($this->args[self::ARGS_METHOD] !== null)
+            return $this->args[self::ARGS_METHOD];
+        return $default;
     }
     
     /**
-     * Determine search method to use.
-     * User-defined method has highest priority.
-     * Otherwise chooses array for one word and tree for batch processing.
-     * @param array $args
-     * @return string
-     * @throws Exception
+     * Get patterns as array
+     * @return array<HyphenationPattern>
      */
-    public function getSearchMethod(array $args): string
-    {
-        // user-defined method has highest priority
-        if (isset($args[self::ARGS_SEARCH_METHOD])) {
-            $method = $args[self::ARGS_SEARCH_METHOD];
-            if ($method !== self::ARGS_SEARCH_METHOD_ARRAY && $method !== self::ARGS_SEARCH_METHOD_TREE)
-                throw new Exception("Unknown search method \"$method\"");
-            else
-                return $method;
-        }
-        
-        // for batch processing use tree - long build time, quick each word processing
-        if (isset($args[self::ARGS_BATCH_INPUT]))
-            return self::ARGS_SEARCH_METHOD_TREE;
-        
-        // for single word use array - longer each word processing
-        //if (isset($args[self::ARGS_SINGLE_INPUT])) // default value
-        return self::ARGS_SEARCH_METHOD_ARRAY;
-    }
-	
-	public function getPatternList(string $path)
+	public function getPatternArray(): array
 	{
+	    if ($this->patternList !== null)
+	        return $this->patternList;
+	    
 		$patterns = [];
 		
-        $this->readPatternsFile($path, function (string $line) use (&$patterns) {
+        $this->readPatternsFile(self::PATTERNS_FILE, function (string $line) use (&$patterns) {
             $patterns[] = new HyphenationPattern($line);
         });
 		
+        $this->patternList = $patterns;
 		return $patterns;
 	}
-	
-	public function getPatternTrie(string $path): Trie
+    
+    /**
+     * Get patterns as tree
+     * @return Trie
+     */
+	public function getPatternTree(): Trie
     {
+        if ($this->patternTree !== null)
+            return $this->patternTree;
+        
         $tree = new Trie();
         
-        $this->readPatternsFile($path, function (string $line) use ($tree) {
+        $this->readPatternsFile(self::PATTERNS_FILE, function (string $line) use ($tree) {
             $pattern = new HyphenationPattern($line);
             $tree->addValue($pattern->getPatternNoNumbers(), $pattern);
         });
         
+        $this->patternTree = $tree;
         return $tree;
     }
     
-    private function readPatternsFile(string $path, $callback): void
+    /**
+     * Get patterns array and tree, out which one will always be null, which
+     * allows to pass both of them to the algorithm.
+     * Chooses method by provided argument or $defaultMethod.
+     * @param string $defaultMethod
+     * @return array [array, tree]
+     */
+    public function getPatternMatchers(string $defaultMethod): array
+    {
+        if ($this->getArg_method($defaultMethod) === "tree") {
+            $array = null;
+            $tree = $this->getPatternTree();
+        } else {
+            $array = $this->getPatternArray();
+            $tree = null;
+        }
+        
+        return [$array, $tree];
+    }
+    
+    /**
+     * Read pattern file with callback for each pattern
+     * @param string $path
+     * @param $callback callable Will get called for each pattern, with pattern as the only argument
+     */
+    private function readPatternsFile(string $path, callable $callback): void
     {
         $file = new SplFileObject($path);
     
@@ -88,37 +156,50 @@ class InputReader
             $callback($line);
         }
     }
-	
-	/**
-	 * Get single word for processing.
-	 * If $args["input"] is set, uses it's value and unsets it.
-	 * Otherwise prompts user for input.
-	 * Returns input string or false if "q" was entered.
-	 * 
-	 * @param array $args
-	 * @return WordInput|bool
-	 */
-	public function getSingleWordInput(array &$args)
-	{
-		$promptText = "Enter a word (or q to quit): ";
-		$input = null;
-		
-		if (isset($args[self::ARGS_SINGLE_INPUT]))
-		{
-			$input = $args[self::ARGS_SINGLE_INPUT];
-			unset($args[self::ARGS_SINGLE_INPUT]);
-			echo "$promptText$input\n";
-		}
-		else
-		{
-			$input = readline($promptText);
-		}
-		
-		if ($input === "q")
-			return false;
-		else
-			return new WordInput($input);
-	}
+    
+    /**
+     * Maps cli args to array.
+     * Accepts both short and long versions, with long version overriding short.
+     * Both long/short versions are set to long key in the result array.
+     * @param array<array> $argsConfig
+     * @return array<string>
+     */
+    private function buildArgsArray(array $argsConfig)
+    {
+        $shortOptions = "";
+        $longOptions = [];
+        
+        // build options string/array
+        foreach ($argsConfig as $singleArg) {
+            $shortOptions .= $singleArg["short"].":";
+            $longOptions[] = $singleArg["long"].":";
+        }
+        
+        $argsInput = getopt($shortOptions, $longOptions);
+        $argsResult = [];
+        
+        // map passed args to $argsResult
+        foreach ($argsConfig as $singleArg) {
+            $shortKey = $singleArg["short"];
+            $longKey = $singleArg["long"];
+            
+            $value = null;
+            
+            if (isset($argsInput[$shortKey]))
+                $value = $argsInput[$shortKey];
+            else if (isset($argsInput[$longKey]))
+                $value = $argsInput[$longKey];
+            
+            if ($value !== null && isset($singleArg["values"])) { // check if value is valid, but allow null 
+                if (!in_array($value, $singleArg["values"]))
+                    throw new Exception("Unknown value \"$value\" for parameter \"$longKey\"");
+            }
+            
+            $argsResult[$longKey] = $value;
+        }
+        
+        return $argsResult;
+    }
 	
 	/**
 	 * Get word list for batch processing
@@ -142,4 +223,5 @@ class InputReader
 		
 		return $words;
 	}
+    
 }

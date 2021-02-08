@@ -1,5 +1,5 @@
 <?php
-namespace App\Entity\Trie;
+namespace App\DataStructure\Trie;
 
 use Exception;
 
@@ -60,10 +60,6 @@ class Node
     {
         if (empty($pathChar))
             throw new Exception("Can't search for empty string");
-        
-        // iterating backwards cuz during tree building last node will be always
-        // needed, as patterns are sorted alphabetically
-        //for ($i = count($this->children) - 1; $i >= 0; $i--) { // Doesn't seem to affect performance
         
         for ($i = 0, $length = count($this->children); $i < $length; $i++) {
             if ($this->children[$i]->pathChar === $pathChar)

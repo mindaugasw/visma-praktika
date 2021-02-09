@@ -6,6 +6,7 @@ use App\Command\DBTest;
 use App\Command\ImportData;
 use App\Command\InteractiveInput;
 use App\Command\TextBlockInput;
+use App\Repository\HyphenationPatternRepository;
 use App\Service\ArgsParser;
 use App\Service\Config;
 use App\Service\DBConnection;
@@ -23,6 +24,7 @@ $reader = new InputReader($argsParser);
 $writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
 $db = new DBConnection($config);
+$patternRepo = new HyphenationPatternRepository($db);
 
 
 $logger->debug('Starting application, "%s"', [implode(' ', $argv)]);
@@ -45,7 +47,7 @@ switch ($command) {
         (new DBTest($db, $config))->process(); // TODO remove
         break;
     case 'import':
-        (new ImportData($db, $argsParser, $reader, $logger))->process();
+        (new ImportData($db, $argsParser, $reader, $logger, $patternRepo))->process();
         break;
     default:
         throw new Exception(sprintf('Unknown command "%s"', $command));

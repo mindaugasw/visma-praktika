@@ -6,6 +6,12 @@ use PDO;
 
 class DBConnection
 {
+    // Config keys
+    const CFG_DB_HOST = "db_host";
+    const CFG_DB_NAME = "db_name";
+    const CFG_DB_USERNAME = "db_username";
+    const CFG_DB_PASSWORD = "db_password";
+    
     private Config $config;
     
     private PDO $connection;
@@ -13,6 +19,7 @@ class DBConnection
     public function __construct(Config $config)
     {
         $this->config = $config;
+        $this->connection = $this->connect();
     }
     
     /**
@@ -23,10 +30,10 @@ class DBConnection
     {
         if (!isset($this->connection))
         {
-            $host = $this->config->get(Config::DB_HOST);
-            $db = $this->config->get(Config::DB_NAME);
-            $user = $this->config->get(Config::DB_USERNAME);
-            $password = $this->config->get(Config::DB_PASSWORD);
+            $host = $this->config->get(self::CFG_DB_HOST);
+            $db = $this->config->get(self::CFG_DB_NAME);
+            $user = $this->config->get(self::CFG_DB_USERNAME);
+            $password = $this->config->get(self::CFG_DB_PASSWORD);
             
             $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
             $options = [
@@ -44,8 +51,7 @@ class DBConnection
      */
     public function testDbConnection(): string
     {
-        $connection = $this->connect();
-        $query = $connection->query("SELECT VERSION()");
+        $query = $this->connection->query("SELECT VERSION()");
         return $query->fetch()["VERSION()"];
     }
     
@@ -55,10 +61,9 @@ class DBConnection
      * @param array $params
      * @return bool was the operation successful?
      */
-    public function query(string $query, array $params)
+    public function query(string $query, array $params = [])
     {
-        $connection = $this->connect();
-        $statement = $connection->prepare($query);
+        $statement = $this->connection->prepare($query);
         return $statement->execute($params);
     }
     
@@ -71,8 +76,7 @@ class DBConnection
      */
     public function fetchClass(string $query, array $params, string $className): array
     {
-        $connection = $this->connect();
-        $statement = $connection->prepare($query);
+        $statement = $this->connection->prepare($query);
         $statement->execute($params);
         return $statement->fetchAll(PDO::FETCH_CLASS, $className);
     }
@@ -85,27 +89,28 @@ class DBConnection
      */
     public function insert(string $query, array $params): int
     {
-        $connection = $this->connect();
-        $statement = $connection->prepare($query);
+        $statement = $this->connection->prepare($query);
         $res = $statement->execute($params);
         
         if ($res === false)
             throw new \Exception("Database error occurred");
         
-        return $connection->lastInsertId();
+        return $this->connection->lastInsertId();
     }
     
-    /**
-     * Run query inside a transaction
-     * @param string $query
-     * @param array $params
-     * @return bool Transaction success result
-     */
-    public function queryTransaction(string $query, array $params): bool
+    public function beginTransaction()
     {
-        $connection = $this->connect();
-        $connection->beginTransaction();
-        $this->query($query, $params);
-        return $connection->commit();
+        if (!$this->connection->beginTransaction())
+            throw new \Exception('Could not begin transaction');
+    }
+    public function commitTransaction()
+    {
+        if (!$this->connection->commit())
+            throw new \Exception('Could not commit transaction');
+    }
+    public function rollbackTransaction()
+    {
+        if (!$this->connection->rollBack())
+            throw new \Exception('Could not rollback transaction');
     }
 }

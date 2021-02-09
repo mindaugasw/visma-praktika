@@ -14,42 +14,6 @@ class InputReader
     
     private ArgsParser $argsParser;
     
-    /*// cli args keys
-    const ARGS_COMMAND = 'command';
-    const ARGS_SINGLE_INPUT = 'input';
-    const ARGS_FILE_INPUT = 'file';
-    const ARGS_FILE_OUTPUT = 'output';
-    const ARGS_METHOD = 'method';
-    
-    private array $argsConfig = [
-        self::ARGS_COMMAND => [
-            'long' => 'command',
-            'short' => 'c',
-        ],
-        self::ARGS_SINGLE_INPUT => [ // console input for single word/text
-            'long' => 'input',
-            'short' => 'i',
-        ],
-        self::ARGS_FILE_INPUT => [ // file path
-            'long' => 'file',
-            'short' => 'f',
-        ],
-        //'batch' => [] // batch input
-        self::ARGS_FILE_OUTPUT => [ // output file
-            'long' => 'output',
-            'short' => 'o',
-        ],
-        self::ARGS_METHOD => [ // pattern search method
-            'long' => 'method',
-            'short' => 'm',
-            'values' => [
-                'array',
-                'tree',
-            ],
-        ],
-    ];
-    
-	private array $args;*/
     private ?array $patternList = null;
     private ?Trie $patternTree = null;
     
@@ -57,19 +21,20 @@ class InputReader
     {
         $this->argsParser = $argsParser;
     }
-	
+    
     /**
      * Get patterns as array
+     * @param string $filePath 
      * @return array<HyphenationPattern>
      */
-	public function getPatternArray(): array
+	public function getPatternArray(string $filePath = self::PATTERNS_FILE): array
 	{
 	    if ($this->patternList !== null)
 	        return $this->patternList;
 	    
 		$patterns = [];
 		
-        $this->readPatternsFile(self::PATTERNS_FILE, function (string $line) use (&$patterns) {
+        $this->readPatternsFile($filePath, function (string $line) use (&$patterns) {
             $patterns[] = new HyphenationPattern($line);
         });
 		
@@ -79,9 +44,10 @@ class InputReader
     
     /**
      * Get patterns as tree
+     * @param string $filePath
      * @return Trie
      */
-	public function getPatternTree(): Trie
+	public function getPatternTree(string $filePath = self::PATTERNS_FILE): Trie
     {
         if ($this->patternTree !== null)
             return $this->patternTree;
@@ -89,7 +55,7 @@ class InputReader
         Profiler::start("tree build");
         $tree = new Trie();
         
-        $this->readPatternsFile(self::PATTERNS_FILE, function (string $line) use ($tree) {
+        $this->readPatternsFile($filePath, function (string $line) use ($tree) {
             $pattern = new HyphenationPattern($line);
             $tree->addValue($pattern->getPatternNoNumbers(), $pattern);
         });
@@ -108,7 +74,7 @@ class InputReader
      */
     public function getPatternMatchers(string $defaultMethod): array
     {
-        if ($this->argsParser->get('method', 'tree') === 'tree') {
+        if ($this->argsParser->get('method', $defaultMethod) === 'tree') {
             $array = null;
             $tree = $this->getPatternTree();
         } else {

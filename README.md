@@ -40,3 +40,13 @@ Long | Short | Required? | Description
 
 Either --input or --file must be set.
 
+#### Import data
+Truncates current DB and imports new data.
+
+`... -- -c=import` 
+`... -- -c=import -p="data/text-hyphenation-patterns.txt"`
+ 
+Long | Short | Required? | Description  
+--- | --- | --- | ---  
+--patterns | -p | Optional | Patterns import options. true - import default file, false - skip import, file path - import custom file
+--words | -w | Optional | Words import options. true - import default file, false - skip import, file path - import custom file

@@ -5,6 +5,7 @@ use App\Command\BatchProcess;
 use App\Command\InteractiveInput;
 use App\Command\TextBlockInput;
 use App\Service\Config;
+use App\Service\DBConnection;
 use App\Service\FileHandler;
 use App\Service\InputReader;
 use App\Service\OutputWriter;
@@ -17,6 +18,7 @@ $reader = new InputReader();
 $writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
 $config = new Config();
+$db = new DBConnection($config);
 
 
 $logger->info('Starting application, "{argv}"', ['argv' => implode(' ', $argv)]);
@@ -33,7 +35,7 @@ switch ($command) {
         (new BatchProcess($reader, $alg, $fileHandler))->process();
         break;
     case 'db':
-        (new \App\Command\DBTest($config))->process();
+        (new \App\Command\DBTest($db, $config))->process();
         break;
     default:
         throw new Exception(sprintf('Unknown command "%s"', $command));

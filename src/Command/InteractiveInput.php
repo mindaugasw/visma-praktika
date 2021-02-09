@@ -3,21 +3,31 @@
 namespace App\Command;
 
 use App\Entity\WordInput;
+use App\Service\ArgsParser;
 use App\Service\InputReader;
 use App\Service\OutputWriter;
 use App\Service\SyllablesAlgorithm;
 
 class InteractiveInput implements CommandInterface
 {
+    /*
+     * CLI args:
+     * - input, -i, optional. Initial input. After processing it, will continue in interactive mode
+     */
+    const ARG_INPUT = 'input';
+        
     private InputReader $reader;
+    private ArgsParser $argsParser;
     private SyllablesAlgorithm $alg;
     private OutputWriter $writer;
     
-    public function __construct(InputReader $reader, SyllablesAlgorithm $alg, OutputWriter $writer)
+    public function __construct(InputReader $reader, ArgsParser $argsParser, SyllablesAlgorithm $alg, OutputWriter $writer)
     {
         $this->reader = $reader;
+        $this->argsParser = $argsParser;
         $this->alg = $alg;
         $this->writer = $writer;
+        $argsParser->addArgConfig(self::ARG_INPUT, 'i', false);
     }
     
     public function process(): void
@@ -30,8 +40,9 @@ class InteractiveInput implements CommandInterface
             if (!$initialWordDone) { 
                 $initialWordDone = true;
                 
-                $word = $this->reader->getArg_singleInput();
-                if ($word === null)
+                if ($this->argsParser->isSet(self::ARG_INPUT))
+                    $word = $this->argsParser->get(self::ARG_INPUT);
+                else
                     continue;
             } else {
                 $word = readline('Enter a word: ');

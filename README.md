@@ -8,7 +8,7 @@ Arguments:
 
 Long | Short | Required? | Description  
 --- | --- | --- | ---  
---command | -c | Required | Command to execute. Valid values: *interactive, text, ~~batch~~*
+--command | -c | Required | Command to execute
 --method | -m | Optional | Pattern search method to use. Valid values: *array, tree*.
 
 Commands can have their own additional arguments.
@@ -37,4 +37,6 @@ Long | Short | Required? | Description
 --input | -i | Optional | Piece of text: word, sentence, paragraph
 --file | -f | Optional | File path for file input. Will have higher priority than --input
 --output | -o | Optional | File path for file output
+
+Either --input or --file must be set.
 

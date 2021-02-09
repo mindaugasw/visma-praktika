@@ -3,32 +3,50 @@
 namespace App\Command;
 
 use App\Entity\WordInput;
+use App\Service\ArgsParser;
 use App\Service\FileHandler;
 use App\Service\InputReader;
 use App\Service\SyllablesAlgorithm;
 
 class TextBlockInput implements CommandInterface
 {
+    /*
+     * CLI args:
+     * - input, -i, optional. Text block input as text
+     * - file, -f, optional. Input as file path
+     * Either -i or -f must be provided
+     * - output, -o, optional. Output file path. If not set, will write output to the console 
+     */
+    const ARG_CLI_INPUT = 'input';
+    const ARG_FILE_INPUT = 'file';
+    const ARG_FILE_OUTPUT = 'output';
+    
     const REGEX_WORD_SEPARATOR = '/\b[a-zA-Z\-\'’]{2,}\b/'; // ' needs additional escaping?
     
     private InputReader $reader;
+    private ArgsParser $argsParser;
     private SyllablesAlgorithm $alg;
     private FileHandler $fileHandler;
     
-    public function __construct(InputReader $reader, SyllablesAlgorithm $alg, FileHandler $fileHandler)
+    public function __construct(InputReader $reader, ArgsParser $argsParser, SyllablesAlgorithm $alg, FileHandler $fileHandler)
     {
         $this->reader = $reader;
+        $this->argsParser = $argsParser;
         $this->alg = $alg;
         $this->fileHandler = $fileHandler;
+    
+        $argsParser->addArgConfig(self::ARG_CLI_INPUT, 'i');
+        $argsParser->addArgConfig(self::ARG_FILE_INPUT, 'f');
+        $argsParser->addArgConfig(self::ARG_FILE_OUTPUT, 'o');
     }
     
     public function process(): void
     {
         $inputStr = '';
-        if ($this->reader->getArg_singleInput() !== null) {
-            $inputStr = $this->reader->getArg_singleInput();
-        } else if ($this->reader->getArg_fileInput() !== null) {
-            $path = $this->reader->getArg_fileInput();
+        if ($this->argsParser->isSet(self::ARG_CLI_INPUT)) {
+            $inputStr = $this->argsParser->get(self::ARG_CLI_INPUT);
+        } else if ($this->argsParser->isSet(self::ARG_FILE_INPUT)) {
+            $path = $this->argsParser->get(self::ARG_FILE_INPUT);
     
             if (!file_exists($path))
                 throw new \Exception(sprintf('File does not exist: "%s"', $path));
@@ -59,8 +77,8 @@ class TextBlockInput implements CommandInterface
     
     private function writeOutput(string $text): void
     {
-        if ($this->reader->getArg_fileOutput() !== null) {
-            $path = $this->reader->getArg_fileOutput();
+        if ($this->argsParser->isSet(self::ARG_FILE_OUTPUT)) {
+            $path = $this->argsParser->get(self::ARG_FILE_OUTPUT);
             $file = $this->fileHandler->openWithMkdir($path, 'x');
             
             $file->fwrite($text);

@@ -2,8 +2,11 @@
 require_once(__DIR__.'/../autoload.php');
 
 use App\Command\BatchProcess;
+use App\Command\DBTest;
+use App\Command\ImportPatterns;
 use App\Command\InteractiveInput;
 use App\Command\TextBlockInput;
+use App\Service\ArgsParser;
 use App\Service\Config;
 use App\Service\DBConnection;
 use App\Service\FileHandler;
@@ -19,23 +22,30 @@ $writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
 $config = new Config();
 $db = new DBConnection($config);
+$argsParser = new ArgsParser();
 
 
 $logger->info('Starting application, "{argv}"', ['argv' => implode(' ', $argv)]);
 
-$command = $reader->getArg_command();
+$argsParser->addArgConfig('command', 'c', true);
+$argsParser->addArgConfig('method', 'm', false, ['array', 'tree']);
+$command = $argsParser->get('command');
+
 switch ($command) {
     case 'interactive':
-        (new InteractiveInput($reader, $alg, $writer))->process();
+        (new InteractiveInput($reader, $argsParser, $alg, $writer))->process();
         break;
     case 'text':
-        (new TextBlockInput($reader, $alg, $fileHandler))->process();
+        (new TextBlockInput($reader, $argsParser, $alg, $fileHandler))->process();
         break;
     case 'batch':
         (new BatchProcess($reader, $alg, $fileHandler))->process();
         break;
     case 'db':
-        (new \App\Command\DBTest($db, $config))->process();
+        (new DBTest($db, $config))->process();
+        break;
+    case 'importPatterns':
+        (new ImportPatterns($db))->process();
         break;
     default:
         throw new Exception(sprintf('Unknown command "%s"', $command));

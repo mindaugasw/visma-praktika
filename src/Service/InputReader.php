@@ -12,7 +12,9 @@ class InputReader
 {
     const PATTERNS_FILE = __DIR__.'/../../data/text-hyphenation-patterns.txt';
     
-    // cli args keys
+    private ArgsParser $argsParser;
+    
+    /*// cli args keys
     const ARGS_COMMAND = 'command';
     const ARGS_SINGLE_INPUT = 'input';
     const ARGS_FILE_INPUT = 'file';
@@ -46,42 +48,16 @@ class InputReader
             ],
         ],
     ];
-	private array $args;
     
+	private array $args;*/
     private ?array $patternList = null;
-	private ?Trie $patternTree = null;
-	
-	public function __construct()
-    {
-        $this->args = $this->buildArgsArray($this->argsConfig);
-    }
-	
-    public function getArg_command(): ?string
-    {
-        return $this->args[self::ARGS_COMMAND];
-    }
-    public function getArg_singleInput(): ?string
-    {
-        return $this->args[self::ARGS_SINGLE_INPUT];
-    }
-    public function getArg_fileInput(): ?string
-    {
-        return $this->args[self::ARGS_FILE_INPUT];
-    }
-    public function getArg_fileOutput(): ?string
-    {
-        return $this->args[self::ARGS_FILE_OUTPUT];
-    }
-    public function getArg_method(string $default = 'array'): string
-    {
-        if (!in_array($default, ['array', 'tree']))
-            throw new Exception(sprintf('Unsupported method "%s"', $default));
-        
-        if ($this->args[self::ARGS_METHOD] !== null)
-            return $this->args[self::ARGS_METHOD];
-        return $default;
-    }
+    private ?Trie $patternTree = null;
     
+    public function __construct(ArgsParser $argsParser)
+    {
+        $this->argsParser = $argsParser;
+    }
+	
     /**
      * Get patterns as array
      * @return array<HyphenationPattern>
@@ -132,7 +108,7 @@ class InputReader
      */
     public function getPatternMatchers(string $defaultMethod): array
     {
-        if ($this->getArg_method($defaultMethod) === "tree") {
+        if ($this->argsParser->get('method', 'tree') === 'tree') {
             $array = null;
             $tree = $this->getPatternTree();
         } else {
@@ -159,50 +135,6 @@ class InputReader
         }
     }
     
-    /**
-     * Maps cli args to array.
-     * Accepts both short and long versions, with long version overriding short.
-     * Both long/short versions are set to long key in the result array.
-     * @param array<array> $argsConfig
-     * @return array<string>
-     */
-    private function buildArgsArray(array $argsConfig)
-    {
-        $shortOptions = "";
-        $longOptions = [];
-        
-        // build options string/array
-        foreach ($argsConfig as $singleArg) {
-            $shortOptions .= $singleArg["short"].":";
-            $longOptions[] = $singleArg["long"].":";
-        }
-        
-        $argsInput = getopt($shortOptions, $longOptions);
-        $argsResult = [];
-        
-        // map passed args to $argsResult
-        foreach ($argsConfig as $singleArg) {
-            $shortKey = $singleArg["short"];
-            $longKey = $singleArg["long"];
-            
-            $value = null;
-            
-            if (isset($argsInput[$shortKey]))
-                $value = $argsInput[$shortKey];
-            else if (isset($argsInput[$longKey]))
-                $value = $argsInput[$longKey];
-            
-            if ($value !== null && isset($singleArg["values"])) { // check if value is valid, but allow null 
-                if (!in_array($value, $singleArg["values"]))
-                    throw new Exception("Unknown value \"$value\" for parameter \"$longKey\"");
-            }
-            
-            $argsResult[$longKey] = $value;
-        }
-        
-        return $argsResult;
-    }
-	
 	/**
 	 * Get word list for batch processing
 	 * @param string $filePath

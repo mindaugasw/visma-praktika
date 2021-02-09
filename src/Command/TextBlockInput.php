@@ -10,16 +10,11 @@ use App\Service\SyllablesAlgorithm;
 
 class TextBlockInput implements CommandInterface
 {
-    /*
-     * CLI args:
-     * - input, -i, optional. Text block input as text
-     * - file, -f, optional. Input as file path
-     * Either -i or -f must be provided
-     * - output, -o, optional. Output file path. If not set, will write output to the console 
-     */
-    const ARG_CLI_INPUT = 'input';
-    const ARG_FILE_INPUT = 'file';
-    const ARG_FILE_OUTPUT = 'output';
+    // CLI args:
+    const ARG_CLI_INPUT = 'input'; // -i, optional. Text block input as text
+    const ARG_FILE_INPUT = 'file'; // -f, optional. Input as file path
+    // Either --input or --file must be set
+    const ARG_FILE_OUTPUT = 'output'; // -o, optional. Output file path. If not set, will write output to the console
     
     const REGEX_WORD_SEPARATOR = '/\b[a-zA-Z\-\'’]{2,}\b/'; // ' needs additional escaping?
     

@@ -16,12 +16,6 @@ class Config
     const FILE_GLOBAL = __DIR__.'/../../config.ini';
     const FILE_LOCAL = __DIR__.'/../../config.local.ini';
     
-    // Config keys
-    const DB_HOST = "db_host";
-    const DB_NAME = "db_name";
-    const DB_USERNAME = "db_username";
-    const DB_PASSWORD = "db_password";
-    
     private array $configData;
     
     public function __construct()
@@ -33,13 +27,17 @@ class Config
      * Get single config value by key
      *
      * @param string $key
+     * @param string|null $default
      * @return string
-     * @throws Exception
      */
-    public function get(string $key): string
+    public function get(string $key, ?string $default = null): string
     {
-        if (!array_key_exists($key, $this->configData))
-            throw new Exception(sprintf('Config key "%s"not found', $key));
+        if (!array_key_exists($key, $this->configData)) {
+            if ($default !== null)
+                return $default;
+            else
+                throw new Exception(sprintf('Config key "%s"not found', $key));
+        }
         
         return $this->configData[$key];
     }

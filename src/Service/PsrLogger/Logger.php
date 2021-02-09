@@ -1,21 +1,35 @@
 <?php
 namespace App\Service\PsrLogger;
 
+use App\Service\Config;
 use App\Service\FileHandler;
 
 class Logger extends AbstractLogger
 {
-    private const DATETIME_FORMAT = 'Y-m-d H:i:s';
+    // Supported config
+    const CFG_LEVEL_CONSOLE = ['key' => 'log_level_console', 'default' => LogLevel::INFO];
+    const CFG_LEVEL_FILE = ['key' => 'log_level_file', 'default' => LogLevel::ALERT];
+    const CFG_LOG_FILE = ['key' => 'log_file', 'default' => '/var/log/log.txt'];
+    
+    const DATETIME_FORMAT = 'Y-m-d H:i:s';
+    
+    private Config $config;
     
     private FileHandler $fileHandler;
-    
     private \SplFileObject $logFile;
+    private string $consoleLevel;
+    private string $fileLevel;
     
-    public function __construct(FileHandler $fileHandler, string $logFile = 'log.txt')
+    public function __construct(FileHandler $fileHandler, Config $config)
     {
         $this->fileHandler = $fileHandler;
+        $this->config = $config;
         
-        $fullPath = sprintf('%s/../../../var/log/%s', __DIR__, $logFile);
+        $this->consoleLevel = $config->get(self::CFG_LEVEL_CONSOLE['key'], self::CFG_LEVEL_CONSOLE['default']);
+        $this->fileLevel = $config->get(self::CFG_LEVEL_FILE['key'], self::CFG_LEVEL_FILE['default']);
+        $logFilePath = $config->get(self::CFG_LOG_FILE['key'], self::CFG_LOG_FILE['default']);
+        
+        $fullPath = sprintf('%s/../../..%s', __DIR__, $logFilePath);
         $this->logFile = $fileHandler->openWithMkdir($fullPath, 'a');
     }
     
@@ -23,29 +37,37 @@ class Logger extends AbstractLogger
      * Logs with an arbitrary level.
      *
      * @param mixed $level
-     * @param string $message
-     * @param mixed[] $context
+     * @param string $message log message. Can be vsprintf format string
+     * @param array $context Args for vsprintf
      * @return void
      * @throws \InvalidArgumentException
      */
     public function log($level, $message, array $context = [])
     {
-        $this->logFile->fwrite(
-            sprintf(
-                "%s @ %s: %s\n\n",
-                strtoupper($level), 
-                date(self::DATETIME_FORMAT),
-                $this->interpolate($message, $context)
-            )
-        );
+        // log to console
+        if (LogLevel::shouldLog($level, $this->consoleLevel)) {
+            echo vsprintf($message."\n", $context);
+        }
+        
+        // log to file
+        if (LogLevel::shouldLog($level, $this->fileLevel)) {
+            $this->logFile->fwrite(
+                sprintf(
+                    "%s @ %s: %s\n\n",
+                    strtoupper($level),
+                    date(self::DATETIME_FORMAT),
+                    vsprintf((string)$message, $context)
+                )
+            );
+        }
     }
     
-    /**
+    /*
      * Interpolates context values into the message placeholders.
      * @param $message
      * @param array $context
      * @return string
-     */
+     *
     private function interpolate($message, array $context = [])
     {
         // support {date}, {time}, {datetime} replacements, if they're not defined in $context 
@@ -54,7 +76,7 @@ class Logger extends AbstractLogger
         if (!isset($context["time"]))
             $context["time"] = date(self::TIME_FORMAT);
         if (!isset($context["datetime"]))
-            $context["datetime"] = date(self::DATETIME_FORMAT);*/
+            $context["datetime"] = date(self::DATETIME_FORMAT);*
         
         // build a replacement array with braces around the context keys
         $replace = array();
@@ -67,5 +89,5 @@ class Logger extends AbstractLogger
         
         // interpolate replacement values into the message and return
         return strtr($message, $replace);
-    }
+    }*/
 }

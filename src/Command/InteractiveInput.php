@@ -10,19 +10,20 @@ use App\Service\SyllablesAlgorithm;
 
 class InteractiveInput implements CommandInterface
 {
-    /*
-     * CLI args:
-     * - input, -i, optional. Initial input. After processing it, will continue in interactive mode
-     */
-    const ARG_INPUT = 'input';
+     // CLI args:
+    const ARG_INPUT = 'input'; // -i, optional. Initial input. After processing it, will continue in interactive mode
         
     private InputReader $reader;
     private ArgsParser $argsParser;
     private SyllablesAlgorithm $alg;
     private OutputWriter $writer;
     
-    public function __construct(InputReader $reader, ArgsParser $argsParser, SyllablesAlgorithm $alg, OutputWriter $writer)
-    {
+    public function __construct(
+        InputReader $reader,
+        ArgsParser $argsParser,
+        SyllablesAlgorithm $alg,
+        OutputWriter $writer
+    ) {
         $this->reader = $reader;
         $this->argsParser = $argsParser;
         $this->alg = $alg;

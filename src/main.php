@@ -3,7 +3,7 @@ require_once(__DIR__.'/../autoload.php');
 
 use App\Command\BatchProcess;
 use App\Command\DBTest;
-use App\Command\ImportPatterns;
+use App\Command\ImportData;
 use App\Command\InteractiveInput;
 use App\Command\TextBlockInput;
 use App\Service\ArgsParser;
@@ -16,16 +16,16 @@ use App\Service\PsrLogger\Logger;
 use App\Service\SyllablesAlgorithm;
 
 $fileHandler = new FileHandler();
-$logger = new Logger($fileHandler);
-$reader = new InputReader();
+$config = new Config();
+$logger = new Logger($fileHandler, $config);
+$argsParser = new ArgsParser();
+$reader = new InputReader($argsParser);
 $writer = new OutputWriter();
 $alg = new SyllablesAlgorithm();
-$config = new Config();
 $db = new DBConnection($config);
-$argsParser = new ArgsParser();
 
 
-$logger->info('Starting application, "{argv}"', ['argv' => implode(' ', $argv)]);
+$logger->debug('Starting application, "%s"', [implode(' ', $argv)]);
 
 $argsParser->addArgConfig('command', 'c', true);
 $argsParser->addArgConfig('method', 'm', false, ['array', 'tree']);
@@ -42,10 +42,10 @@ switch ($command) {
         (new BatchProcess($reader, $alg, $fileHandler))->process();
         break;
     case 'db':
-        (new DBTest($db, $config))->process();
+        (new DBTest($db, $config))->process(); // TODO remove
         break;
-    case 'importPatterns':
-        (new ImportPatterns($db))->process();
+    case 'import':
+        (new ImportData($db, $argsParser, $reader, $logger))->process();
         break;
     default:
         throw new Exception(sprintf('Unknown command "%s"', $command));

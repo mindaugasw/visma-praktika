@@ -10,7 +10,7 @@ use App\Exception\NotImplementedException;
 use Exception;
 use SplFileObject;
 
-class SyllablesAlgorithm
+class Hyphenator
 {
 	//private const ITEMS_IN_ONE_BATCH = 100;
 	
@@ -24,30 +24,30 @@ class SyllablesAlgorithm
 	public function wordToSyllables(WordInput $inputObj, ?array $patternsArray, ?Trie $patternsTree = null): WordResult
 	{
 		$timer = Profiler::start();
-		$res = new WordResult($inputObj);
+		$result = new WordResult($inputObj);
 		
 		if ($patternsArray !== null) { // Use pattern array for search
-		    
-            for ($i = 0; $i < count($patternsArray); $i++) {
-                /** @var HyphenationPattern $p Current pattern */
-                $p = clone $patternsArray[$i];
+		    foreach ($patternsArray as $patternOriginal) {
+                /** @var HyphenationPattern $pattern Current pattern */
+                $pattern = clone $patternOriginal; // clone to set position specifically for this word
                 // TODO doesn't work if same pattern is multiple times in the word: only 1st occurrence is returned
-                $pos = $this->findPatternInWord($inputObj->getInput(), $p);
+                $pos = $this->findPatternInWord($inputObj->getInput(), $pattern);
                 
                 if ($pos !== -1) {
-                    $p->setPosition($pos);
-                    $res->addMatchedPattern($p);
-                    $res->addToNumberMatrix(
-                        $this->buildMatrixRow($inputObj->getInput(), $p)
+                    $pattern->setPosition($pos);
+                    $result->addMatchedPattern($pattern);
+                    $result->addToNumberMatrix(
+                        $this->buildMatrixRow($inputObj->getInput(), $pattern)
                     );
                 }
             }
             
         } else if ($patternsTree !== null) { // use pattern tree for search
 		    
-		    $res->setMatchedPatterns($patternsTree->findMatches($inputObj->getInputWithDots()));
-		    foreach ($res->getMatchedPatterns() as $pattern) {
-		        $res->addToNumberMatrix(
+		    $result->setMatchedPatterns($patternsTree->findMatches($inputObj->getInputWithDots()));
+		    
+		    foreach ($result->getMatchedPatterns() as $pattern) {
+		        $result->addToNumberMatrix(
 		            $this->buildMatrixRow($inputObj->getInput(), $pattern)
                 );
             }
@@ -55,9 +55,9 @@ class SyllablesAlgorithm
         } else
             throw new Exception('No method selected for pattern search');
 		
-		$this->setResultValues($res);
-		$res->setTime(Profiler::stop($timer));
-		return $res;
+		$this->setResultValues($result);
+		$result->setTime(Profiler::stop($timer));
+		return $result;
 	}
     
     /**
@@ -130,21 +130,21 @@ class SyllablesAlgorithm
 	 */
 	private function findPatternInWord(string $input, HyphenationPattern $pattern): int
 	{
-		$pos = strpos($input, $pattern->getPatternText());
+		$position = strpos($input, $pattern->getPatternText());
 		
 		// pattern not found
-		if ($pos === false)
+		if ($position === false)
 			return -1;
 		
 		// start pattern isn't at the start
-		if ($pattern->isStartPattern() && $pos !== 0)
+		if ($pattern->isStartPattern() && $position !== 0)
 			return -1;
 		
 		// end pattern isn't at the end
-		if ($pattern->isEndPattern() && $pos + strlen($pattern->getPatternText()) !== strlen($input))
+		if ($pattern->isEndPattern() && $position + strlen($pattern->getPatternText()) !== strlen($input))
 			return -1;
 		
-		return $pos;
+		return $position;
 	}
 	
 	/**
@@ -156,6 +156,7 @@ class SyllablesAlgorithm
 	 */
 	private function buildMatrixRow(string $input, HyphenationPattern $pattern): array
 	{
+        // TODO algorithm bug. On word 'dark' (default text input), in number matrix assigns value to -1 index
 		$matrixRow = array_fill(0, strlen($input), -1);
 		
 		$numberMatches = []; // extracted numbers from this $pattern, [[[number, position in pattern], [...], ]]
@@ -165,7 +166,7 @@ class SyllablesAlgorithm
 		// add numbers to correct places in the row
 		for ($j = 0; $j < count($numberMatches); $j++)
 		{
-		    // TODO skip last index number? Would prevent hyphen-at-word-end bugs (e.g. 
+		    // TODO skip last index number? Would prevent hyphen-at-word-end bugs (e.g. dark-, in-)
 			$matrixRow
 				[$pattern->getPosition() + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
 				= $numberMatches[$j][0];

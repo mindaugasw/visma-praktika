@@ -5,9 +5,12 @@ namespace App\Entity;
 class HyphenationPattern
 {
 	// Pattern types, depending on dot position in the pattern
-	private const TYPE_REGULAR = 0;
-	private const TYPE_START = 1;
-	private const TYPE_END = 2;
+	public const TYPE_REGULAR = 0;
+	public const TYPE_START = 1;
+	public const TYPE_END = 2;
+	
+	/** @var int Id in DB */
+	private int $id;
 	
 	/** @var string Full Hyphenation pattern, e.g. .mis1*/
 	private string $pattern;
@@ -26,23 +29,43 @@ class HyphenationPattern
 	
 	/** @var int Position in word at which this pattern starts */
 	private int $position;
-	
-	
-	public function __construct($pattern)
-	{
-	    //$pattern = strtolower($pattern); // assume all patterns are already lowercase, to improve performance
-		$this->pattern = $pattern;
-        $this->patternNoDot = str_replace('.', '', $pattern);
-        $this->patternNoNumbers = strval(preg_replace('/[\d]/', '', $pattern)); // TODO strval remove
-        $this->patternText = str_replace('.', '', $this->patternNoNumbers);
-        
-        if (substr($pattern, 0, 1) === '.') 
-			$this->patternType = self::TYPE_START;
-		else if (substr($pattern, -1) === '.')
-			$this->patternType = self::TYPE_END;
-		else
-			$this->patternType = self::TYPE_REGULAR;
-	}
+    
+    /**
+     * @param ?string $pattern If null, no properties will be set. Meant for initialization with PDO 
+     */
+	public function __construct(?string $pattern = null)
+    {
+        if ($pattern !== null) {
+            $this->pattern = $pattern;
+            $this->patternNoDot = str_replace('.', '', $pattern);
+            $this->patternNoNumbers = strval(preg_replace('/[\d]/', '', $pattern)); // TODO strval remove
+            $this->patternText = str_replace('.', '', $this->patternNoNumbers);
+    
+            if (substr($pattern, 0, 1) === '.')
+                $this->patternType = self::TYPE_START;
+            else if (substr($pattern, -1) === '.')
+                $this->patternType = self::TYPE_END;
+            else
+                $this->patternType = self::TYPE_REGULAR;
+        }
+    }
+    
+    public function __toString()
+    {
+        if (isset($this->position))
+            return sprintf('%s @ %d', $this->pattern, $this->position);
+        else
+            return $this->pattern; 
+    }
+    
+    
+    /**
+     * @return int
+     */
+	public function getId(): int
+    {
+        return $this->id;
+    }
 	
 	/**
 	 * @return string

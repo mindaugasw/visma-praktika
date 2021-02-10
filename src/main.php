@@ -7,47 +7,50 @@ use App\Command\ImportData;
 use App\Command\InteractiveInput;
 use App\Command\TextBlockInput;
 use App\Repository\HyphenationPatternRepository;
-use App\Service\ArgsParser;
+use App\Repository\WordResultRepository;
+use App\Repository\WordToPatternRepository;
+use App\Service\ArgsHandler;
 use App\Service\Config;
 use App\Service\DBConnection;
 use App\Service\FileHandler;
 use App\Service\InputReader;
 use App\Service\OutputWriter;
 use App\Service\PsrLogger\Logger;
-use App\Service\SyllablesAlgorithm;
+use App\Service\Hyphenator;
 
 $fileHandler = new FileHandler();
 $config = new Config();
 $logger = new Logger($fileHandler, $config);
-$argsParser = new ArgsParser();
-$reader = new InputReader($argsParser);
-$writer = new OutputWriter();
-$alg = new SyllablesAlgorithm();
-$db = new DBConnection($config);
+$argsHandler = new ArgsHandler();
+$db = new DBConnection($config, $logger);
 $patternRepo = new HyphenationPatternRepository($db);
-
+$wtpRepo = new WordToPatternRepository($db);
+$wordRepo = new WordResultRepository($db, $wtpRepo, $logger);
+$reader = new InputReader($argsHandler, $logger, $patternRepo);
+$writer = new OutputWriter();
+$hyphenator = new Hyphenator();
 
 $logger->debug('Starting application, "%s"', [implode(' ', $argv)]);
 
-$argsParser->addArgConfig('command', 'c', true);
-$argsParser->addArgConfig('method', 'm', false, ['array', 'tree']);
-$command = $argsParser->get('command');
+$argsHandler->addArgConfig('command', 'c', true);
+$argsHandler->addArgConfig('method', 'm', false, ['array', 'tree']);
+$command = $argsHandler->get('command');
 
 switch ($command) {
     case 'interactive':
-        (new InteractiveInput($reader, $argsParser, $alg, $writer))->process();
+        (new InteractiveInput($reader, $argsHandler, $hyphenator, $writer))->process();
         break;
     case 'text':
-        (new TextBlockInput($reader, $argsParser, $alg, $fileHandler))->process();
+        (new TextBlockInput($reader, $argsHandler, $hyphenator, $fileHandler))->process();
         break;
     case 'batch':
-        (new BatchProcess($reader, $alg, $fileHandler))->process();
+        (new BatchProcess($reader, $hyphenator, $fileHandler))->process();
         break;
     case 'db':
         (new DBTest($db, $config))->process(); // TODO remove
         break;
     case 'import':
-        (new ImportData($db, $argsParser, $reader, $logger, $patternRepo))->process();
+        (new ImportData($argsHandler, $reader, $logger, $hyphenator, $patternRepo, $wtpRepo, $wordRepo))->process();
         break;
     default:
         throw new Exception(sprintf('Unknown command "%s"', $command));

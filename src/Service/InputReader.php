@@ -5,61 +5,83 @@ namespace App\Service;
 use App\Entity\HyphenationPattern;
 use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
+use App\Repository\HyphenationPatternRepository;
+use App\Service\PsrLogger\LoggerInterface;
 use Exception;
 use SplFileObject;
 
 class InputReader
 {
     const PATTERNS_FILE = __DIR__.'/../../data/text-hyphenation-patterns.txt';
+    const WORDS_FILE = __DIR__.'/../../data/test-dictionary-140k.txt';
     
-    private ArgsParser $argsParser;
+    private ArgsHandler $argsHandler;
+    private LoggerInterface $logger;
+    private HyphenationPatternRepository $patternRepo;
     
     private ?array $patternList = null;
     private ?Trie $patternTree = null;
     
-    public function __construct(ArgsParser $argsParser)
+    public function __construct(ArgsHandler $argsHandler, LoggerInterface $logger, HyphenationPatternRepository $patternRepo)
     {
-        $this->argsParser = $argsParser;
+        $this->argsHandler = $argsHandler;
+        $this->logger = $logger;
+        $this->patternRepo = $patternRepo;
     }
     
     /**
      * Get patterns as array
-     * @param string $filePath 
+     * @param bool $useDb Whether to read patterns from DB or from file
+     * @param string $filePath
      * @return array<HyphenationPattern>
      */
-	public function getPatternArray(string $filePath = self::PATTERNS_FILE): array
+	public function getPatternArray(bool $useDb = true, string $filePath = self::PATTERNS_FILE): array
 	{
 	    if ($this->patternList !== null)
 	        return $this->patternList;
 	    
-		$patterns = [];
-		
-        $this->readPatternsFile($filePath, function (string $line) use (&$patterns) {
-            $patterns[] = new HyphenationPattern($line);
-        });
-		
-        $this->patternList = $patterns;
-		return $patterns;
-	}
+	    if ($useDb) {
+	        $this->patternList = $this->patternRepo->getAll();
+        } else {
+            $patterns = [];
+            $this->readPatternsFile(
+                $filePath,
+                function (string $line) use (&$patterns)
+                {
+                    $patterns[] = new HyphenationPattern($line);
+                }
+            );
+        
+            $this->patternList = $patterns;
+        }
+        return $this->patternList;
+    }
     
     /**
      * Get patterns as tree
+     * @param bool $useDb
      * @param string $filePath
      * @return Trie
      */
-	public function getPatternTree(string $filePath = self::PATTERNS_FILE): Trie
+	public function getPatternTree(bool $useDb = true, string $filePath = self::PATTERNS_FILE): Trie
     {
         if ($this->patternTree !== null)
             return $this->patternTree;
     
+        $array = $this->getPatternArray($useDb, $filePath);
+        
         Profiler::start("tree build");
         $tree = new Trie();
+    
+        foreach ($array as $p) {
+            $tree->addValue($p->getPatternNoNumbers(), $p);
+        }
         
-        $this->readPatternsFile($filePath, function (string $line) use ($tree) {
+        /*$this->readPatternsFile($filePath, function (string $line) use ($tree) {
             $pattern = new HyphenationPattern($line);
             $tree->addValue($pattern->getPatternNoNumbers(), $pattern);
-        });
-        Profiler::stopEcho("tree build");
+        });*/
+        $this->logger->debug('Tree built in %f ms', [Profiler::stop("tree build")]);
         
         $this->patternTree = $tree;
         return $tree;
@@ -70,19 +92,29 @@ class InputReader
      * allows to pass both of them to the algorithm.
      * Chooses method by provided argument or $defaultMethod.
      * @param string $defaultMethod
+     * @param bool $useDb If true, will read patterns from DB. If False, will read from default file.
      * @return array [array, tree]
      */
-    public function getPatternMatchers(string $defaultMethod): array
+    public function getPatternMatchers(string $defaultMethod, bool $useDb = true): array
     {
-        if ($this->argsParser->get('method', $defaultMethod) === 'tree') {
+        if ($this->argsHandler->get('method', $defaultMethod) === 'tree') {
             $array = null;
-            $tree = $this->getPatternTree();
+            $tree = $this->getPatternTree($useDb);
         } else {
-            $array = $this->getPatternArray();
+            $array = $this->getPatternArray($useDb);
             $tree = null;
         }
         
         return [$array, $tree];
+    }
+    
+    /**
+     * Clear cached pattern array and tree to force rebuild them on next getPattern* call
+     */
+    public function clearPatternsCache(): void
+    {
+        $this->patternList = null;
+        $this->patternTree = null;
     }
     
     /**
@@ -106,12 +138,11 @@ class InputReader
 	 * @param string $filePath
 	 * @return array<WordInput>
 	 */
-	public function getWordList(string $filePath): array
+	public function getWordList(string $filePath = self::WORDS_FILE): array
 	{
 		// TODO fix multibyte encoding when reading from file
-		throw new Exception();
 		
-		$file = new SplFileObject($filePath);
+		$file = new SplFileObject($filePath, 'r');
 		$words = [];
 		
 		while (!$file->eof())

@@ -42,19 +42,31 @@ class Profiler
 		
 		return ($endTime - self::$timers[$key]) / self::unitsToDivisor($units);
 	}
+    
+    /**
+     * Stop timer and get formatted string
+     * @param $key
+     * @param string $units
+     * @return string
+     */
+    public static function stopString($key, string $units = 'ms'): string
+    {
+        $value = self::stop($key, $units);
+        return sprintf("Time @ %s: %f %s\n", $key, $value, $units);
+    }
 	
 	/**
-	 * Stop timer and print result
+	 * Stop timer and echo result
 	 * @param $key
 	 * @param string $units
 	 * @return float
 	 * @throws Exception
 	 */
-	public static function stopEcho($key, string $units = 'ms'): float
+	public static function stopEcho($key, string $units = 'ms'): void
 	{
-		$value = self::stop($key, $units);
-		echo sprintf("Time @ %s: %f %s\n", $key, $value, $units);
-		return $value;
+		//$value = self::stop($key, $units);
+		echo self::stopString($key, $units);
+		//return $value;
 	}
 	
 	/**

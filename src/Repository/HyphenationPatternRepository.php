@@ -16,13 +16,20 @@ class HyphenationPatternRepository
         $this->db = $db;
     }
     
+    public function truncate(): void
+    {
+        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
+        if (!$this->db->query($truncateSql))
+            throw new \Exception();
+    }
+    
     /**
      * Truncate patterns table and import new ones
      * @param array<HyphenationPattern> $patterns
+     * @return void
      */
     public function import(array $patterns): void
     {
-        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // Can't use TRUNCATE as it causes autocommit
         $insertSql = sprintf('INSERT INTO `%s`(`pattern`, `patternNoDot`, `patternNoNumbers`, `patternText`, `patternType`) VALUES ', self::TABLE);
         $insertArgs = [];
         
@@ -39,17 +46,24 @@ class HyphenationPatternRepository
                 $p->getPatternNoDot(),
                 $p->getPatternNoNumbers(),
                 $p->getPatternText(),
-                $p->isStartPattern() ? 1 : ($p->isEndPattern() ? 2 : 0)
+                $p->isStartPattern() ?
+                    HyphenationPattern::TYPE_START : 
+                    ($p->isEndPattern() ? 
+                        HyphenationPattern::TYPE_END : 
+                        HyphenationPattern::TYPE_REGULAR)
             );
         }
         
-        $this->db->beginTransaction();
-        if (!$this->db->query($truncateSql) ||
-            !$this->db->query($insertSql, $insertArgs)
-        ) {
-            $this->db->rollbackTransaction();
-            throw new \Exception('Error occurred during import. Rolling back.');
-        } else
-            $this->db->commitTransaction();
+        if (!$this->db->query($insertSql, $insertArgs))
+            throw new \Exception('Error occurred during import');
+    }
+    
+    /**
+     * @return array<HyphenationPattern>
+     */
+    public function getAll(): array
+    {
+        $sql = sprintf('SELECT * FROM `%s`', self::TABLE);
+        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
     }
 }

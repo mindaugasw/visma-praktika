@@ -3,10 +3,10 @@
 namespace App\Command;
 
 use App\Entity\WordInput;
-use App\Service\ArgsParser;
+use App\Service\ArgsHandler;
 use App\Service\FileHandler;
 use App\Service\InputReader;
-use App\Service\SyllablesAlgorithm;
+use App\Service\Hyphenator;
 
 class TextBlockInput implements CommandInterface
 {
@@ -19,29 +19,29 @@ class TextBlockInput implements CommandInterface
     const REGEX_WORD_SEPARATOR = '/\b[a-zA-Z\-\'’]{2,}\b/'; // ' needs additional escaping?
     
     private InputReader $reader;
-    private ArgsParser $argsParser;
-    private SyllablesAlgorithm $alg;
+    private ArgsHandler $argsHandler;
+    private Hyphenator $hyphenator;
     private FileHandler $fileHandler;
     
-    public function __construct(InputReader $reader, ArgsParser $argsParser, SyllablesAlgorithm $alg, FileHandler $fileHandler)
+    public function __construct(InputReader $reader, ArgsHandler $argsHandler, Hyphenator $hyphenator, FileHandler $fileHandler)
     {
         $this->reader = $reader;
-        $this->argsParser = $argsParser;
-        $this->alg = $alg;
+        $this->argsHandler = $argsHandler;
+        $this->hyphenator = $hyphenator;
         $this->fileHandler = $fileHandler;
     
-        $argsParser->addArgConfig(self::ARG_CLI_INPUT, 'i');
-        $argsParser->addArgConfig(self::ARG_FILE_INPUT, 'f');
-        $argsParser->addArgConfig(self::ARG_FILE_OUTPUT, 'o');
+        $argsHandler->addArgConfig(self::ARG_CLI_INPUT, 'i');
+        $argsHandler->addArgConfig(self::ARG_FILE_INPUT, 'f');
+        $argsHandler->addArgConfig(self::ARG_FILE_OUTPUT, 'o');
     }
     
     public function process(): void
     {
         $inputStr = '';
-        if ($this->argsParser->isSet(self::ARG_CLI_INPUT)) {
-            $inputStr = $this->argsParser->get(self::ARG_CLI_INPUT);
-        } else if ($this->argsParser->isSet(self::ARG_FILE_INPUT)) {
-            $path = $this->argsParser->get(self::ARG_FILE_INPUT);
+        if ($this->argsHandler->isSet(self::ARG_CLI_INPUT)) {
+            $inputStr = $this->argsHandler->get(self::ARG_CLI_INPUT);
+        } else if ($this->argsHandler->isSet(self::ARG_FILE_INPUT)) {
+            $path = $this->argsHandler->get(self::ARG_FILE_INPUT);
     
             if (!file_exists($path))
                 throw new \Exception(sprintf('File does not exist: "%s"', $path));
@@ -61,7 +61,7 @@ class TextBlockInput implements CommandInterface
         return preg_replace_callback(
             self::REGEX_WORD_SEPARATOR,
             function ($matches) use ($array, $tree) {
-                return $this->alg->wordToSyllables(
+                return $this->hyphenator->wordToSyllables(
                     new WordInput($matches[0]),
                     $array,
                     $tree)
@@ -72,8 +72,8 @@ class TextBlockInput implements CommandInterface
     
     private function writeOutput(string $text): void
     {
-        if ($this->argsParser->isSet(self::ARG_FILE_OUTPUT)) {
-            $path = $this->argsParser->get(self::ARG_FILE_OUTPUT);
+        if ($this->argsHandler->isSet(self::ARG_FILE_OUTPUT)) {
+            $path = $this->argsHandler->get(self::ARG_FILE_OUTPUT);
             $file = $this->fileHandler->openWithMkdir($path, 'x');
             
             $file->fwrite($text);

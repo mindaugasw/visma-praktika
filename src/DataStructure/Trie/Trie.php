@@ -13,6 +13,11 @@ class Trie
         $this->rootNode = new Node('', '');
     }
     
+    public function __toString()
+    {
+        return $this->rootNode->__toString();
+    }
+    
     /**
      * Get array of all matches for given text
      * @param string $input
@@ -129,5 +134,4 @@ class Trie
     {
         return $this->endNodesCount;
     }
-    
 }

@@ -4,6 +4,9 @@ namespace App\Entity;
 
 class WordResult extends WordInput
 {
+    /** @var int Id in DB */
+    private int $id;
+    
 	/** @var string Final result - word divided into syllables, e.g. mis-trans-late */
 	private string $result;
 	
@@ -29,7 +32,31 @@ class WordResult extends WordInput
 		$this->matchedPatterns = [];
 		$this->numberMatrix = [];
 	}
-	
+    
+	public function __toString()
+    {
+        return sprintf('%s -> %s', $this->input, $this->result);
+    }
+    
+    /**
+     * Id from DB
+     * @return int
+     */
+	public function getId(): int
+    {
+        return $this->id;
+    }
+    
+    /**
+     * Id from DB. Allows setting only once (readonly property)
+     * @param int $id
+     */
+    public function setId(int $id): void
+    {
+        if (isset($this->id))
+            throw new \Exception('Attempted to reset object id');
+        $this->id = $id;
+    }
 	
 	/**
 	 * Final result - word divided into syllables, e.g. mis-trans-late

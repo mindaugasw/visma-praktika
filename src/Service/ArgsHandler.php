@@ -8,7 +8,7 @@ use Exception;
  * Provides tools for managing cli arguments
  * @package App\Service
  */
-class ArgsParser
+class ArgsHandler
 {
     private array $argsConfig; /* = [   // example config
         'input' => [
@@ -90,10 +90,15 @@ class ArgsParser
         
             $value = null;
         
-            if (isset($argsInput[$long]))
+            if (isset($argsInput[$long])) {
+                if (is_array($argsInput[$long]))
+                    throw new Exception('getopt is bugged again');
                 $value = $argsInput[$long];
-            else if (isset($argsInput[$short]))
+            } else if (isset($argsInput[$short])) {
+                if (is_array($argsInput[$short]))
+                    throw new Exception('getopt is bugged again');
                 $value = $argsInput[$short];
+            }
     
             // unset and but required
             if ($value === null && $singleConf['required'] === true) 

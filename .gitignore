@@ -1,6 +1,9 @@
 /vendor/
 /var/
 config.local.ini
+/data/test-dictionary-*
+!/data/test-dictionary-1k.txt
+!/data/test-dictionary-140k.txt
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,phpstorm
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,phpstorm

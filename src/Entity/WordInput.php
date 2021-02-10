@@ -5,16 +5,16 @@ namespace App\Entity;
 class WordInput
 {
 	/** @var string Original word input, e.g. mistranslate */
-	private string $input;
+	protected string $input;
 	
 	/** @var string Original word with spaces, e.g. m i s t r a n s l a t e */
-	private string $inputWithSpaces;
+    protected string $inputWithSpaces;
 	
 	/** @var string Original word with leading and trailing dots, e.g. .mistranslate. */
-	private string $inputWithDots;
+    protected string $inputWithDots;
 	
 	/* @var string Expected result with which actual result will be compared */
-	private string $expectedResult;
+    protected string $expectedResult;
 	
 	public function __construct(string $input, string $expectedResult = null)
 	{

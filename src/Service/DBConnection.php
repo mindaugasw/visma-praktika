@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Service\PsrLogger\LoggerInterface;
 use PDO;
 
 class DBConnection
@@ -14,11 +15,13 @@ class DBConnection
     
     private Config $config;
     
-    private PDO $connection;
+    public PDO $connection; // TODO make private
+    private LoggerInterface $logger;
     
-    public function __construct(Config $config)
+    public function __construct(Config $config, LoggerInterface $logger)
     {
         $this->config = $config;
+        $this->logger = $logger;
         $this->connection = $this->connect();
     }
     
@@ -40,6 +43,7 @@ class DBConnection
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ];
             $this->connection = new PDO($dsn, $user, $password, $options);
+            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING); // TODO remove in prod?
         }
         
         return $this->connection;
@@ -100,17 +104,23 @@ class DBConnection
     
     public function beginTransaction()
     {
-        if (!$this->connection->beginTransaction())
+        if ($this->connection->inTransaction())
+            $this->logger->warning('Attempted to begin new transaction while already in a transaction');
+        else if (!$this->connection->beginTransaction())
             throw new \Exception('Could not begin transaction');
     }
     public function commitTransaction()
     {
-        if (!$this->connection->commit())
+        if (!$this->connection->inTransaction())
+            $this->logger->warning('Attempted to commit transaction without starting it');
+        else if (!$this->connection->commit())
             throw new \Exception('Could not commit transaction');
     }
     public function rollbackTransaction()
     {
-        if (!$this->connection->rollBack())
+        if (!$this->connection->inTransaction())
+            throw new \Exception('Attempted to rollback transaction without starting it');
+        else if (!$this->connection->rollBack())
             throw new \Exception('Could not rollback transaction');
     }
 }

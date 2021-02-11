@@ -58,6 +58,8 @@ class InteractiveInput implements CommandInterface
             } else {
                 $word = readline();
             }
+            if (empty($word))
+                continue;
             $this->processOneWord($word);
         }
     }
@@ -72,7 +74,7 @@ class InteractiveInput implements CommandInterface
             [$array, $tree] = $this->reader->getPatternMatchers('array');
             $wordResult = $this->hyphenator->wordToSyllables(new WordInput($input), $array, $tree);
             $this->writer->printFullWordResult($wordResult);
-            // TODO add to DB
+            $this->wordRepo->insert($wordResult);
         }
     }
 }

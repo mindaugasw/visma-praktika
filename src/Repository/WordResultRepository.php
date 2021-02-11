@@ -43,7 +43,7 @@ class WordResultRepository
         
         for ($i = 0; $i < count($words); $i++) {
     
-            $words[$i]->setId($i + 1);
+            $words[$i]->setId($i + 1); // TODO use auto increment
             $wordsSql .= '(?, ?, ?),';
             array_push($wordsArgs, $words[$i]->getId(), $words[$i]->getInput(), $words[$i]->getResult());
             
@@ -87,5 +87,23 @@ class WordResultRepository
         );
         
         return $wordResult;
+    }
+    
+    public function insert(WordResult $wordResult): void
+    {
+        $wordSql = sprintf('INSERT INTO `%s`(`input`, `result`) VALUES (?,?)', self::TABLE);
+        $wordArgs = [
+            $wordResult->getInput(),
+            $wordResult->getResult()
+        ];
+        
+        [$patternsSql, $patternsArgs] = $this->wtpRepo->buildImportQuery([$wordResult]);
+        
+        $this->db->beginTransaction();
+        $lastId = $this->db->insert($wordSql, $wordArgs);
+        $patternsArgs[0] = $lastId;
+        if (!$this->db->query($patternsSql, $patternsArgs))
+            throw new Exception();
+        $this->db->commitTransaction();
     }
 }

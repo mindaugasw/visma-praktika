@@ -46,9 +46,6 @@ switch ($command) {
     case 'batch':
         (new BatchProcess($reader, $hyphenator, $fileHandler))->process();
         break;
-    case 'db':
-        (new DBTest($db, $config))->process(); // TODO remove
-        break;
     case 'import':
         (new ImportData($argsHandler, $reader, $logger, $hyphenator, $patternRepo, $wtpRepo, $wordRepo))->process();
         break;

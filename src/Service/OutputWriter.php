@@ -57,12 +57,4 @@ class OutputWriter
             $patternsString,
             $wordResult->getResult());
     }
-	
-	public function writeBatchOutputToFile(array $words, string $outputFilePath)
-	{
-	    throw new NotImplementedException();
-		//$outputFile = new SplFileObject($outputFilePath, "w");
-		//$outputFile->fwrite("input,expectedResult,actualResult,isCorrect\n");
-		
-	}
 }

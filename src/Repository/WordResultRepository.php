@@ -71,4 +71,21 @@ class WordResultRepository
             }
         }
     }
+    
+    public function findOne(string $inputWord): ?WordResult
+    {
+        $wordSql = sprintf('SELECT * FROM `%s` WHERE `input`=?', self::TABLE);
+        $resultsArray = $this->db->fetchClass($wordSql, [$inputWord], WordResult::class);
+        
+        if (count($resultsArray) === 0)
+            return null;
+        
+        $wordResult = $resultsArray[0];
+    
+        $wordResult->setMatchedPatterns(
+            $this->wtpRepo->findByWord($wordResult->getId())
+        );
+        
+        return $wordResult;
+    }
 }

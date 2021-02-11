@@ -38,7 +38,7 @@ $command = $argsHandler->get('command');
 
 switch ($command) {
     case 'interactive':
-        (new InteractiveInput($reader, $argsHandler, $hyphenator, $writer))->process();
+        (new InteractiveInput($reader, $logger, $argsHandler, $hyphenator, $writer, $wordRepo))->process();
         break;
     case 'text':
         (new TextBlockInput($reader, $argsHandler, $hyphenator, $fileHandler))->process();

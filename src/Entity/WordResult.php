@@ -24,13 +24,18 @@ class WordResult extends WordInput
 	
 	/** @var float Processing time, ms */
 	private float $time;
-	
-	
-	public function __construct(WordInput $input)
+    
+    
+    /**
+     * @param ?WordInput $input If null, no properties will be set. Meant for initialization with PDO
+     */
+	public function __construct(?WordInput $input = null)
 	{
-		parent::__construct($input->getInput(), $input->getExpectedResult());
-		$this->matchedPatterns = [];
-		$this->numberMatrix = [];
+	    if ($input !== null) {
+            parent::__construct($input->getInput(), $input->getExpectedResult());
+            $this->matchedPatterns = [];
+            $this->numberMatrix = [];
+        }
 	}
     
 	public function __toString()

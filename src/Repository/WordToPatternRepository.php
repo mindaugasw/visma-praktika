@@ -2,6 +2,8 @@
 
 namespace App\Repository;
 
+use App\Entity\HyphenationPattern;
+use App\Entity\WordInput;
 use App\Entity\WordResult;
 use App\Service\DBConnection;
 
@@ -42,5 +44,22 @@ class WordToPatternRepository
         }
         $sql = substr($sql, 0, -1); // remove trailing comma
         return [$sql, $args];
+    }
+    
+    public function findByWord(int $wordId): array
+    {
+        $sql = sprintf(
+            'SELECT
+                `%1$s`.`position`,
+                `%2$s`.*
+            FROM
+                `%1$s`
+            JOIN `%2$s` ON `%1$s`.`pattern_id` = `%2$s`.`id`
+            WHERE
+                `%1$s`.`word_id` = ?',
+            self::TABLE,
+            HyphenationPatternRepository::TABLE
+        );
+        return $this->db->fetchClass($sql, [$wordId], HyphenationPattern::class);
     }
 }

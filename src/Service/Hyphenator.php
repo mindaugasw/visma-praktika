@@ -60,65 +60,6 @@ class Hyphenator
 		return $result;
 	}
     
-    /**
-     * @param array<WordInput> $words
-     * @param array<HyphenationPattern> $patterns
-     * @param string $outputFilePath
-     */
-    public function processBatch(array $words, array $patterns, string $outputFilePath)
-    {
-        throw new NotImplementedException();
-        
-        /** @var array<WordResult> $outputWords */
-        $outputWords = [];
-        /** @var array<WordResult> WordResult $badWords */
-        $badWords = [];
-        
-        $count = count($words);
-        
-        echo "Batch processing $count words, output in $outputFilePath\n\n"
-            ."Items done, time taken, +correct -incorrect\n";;
-        
-        $good = 0;
-        $bad = 0;
-        $startTime = hrtime(true);
-        
-        for ($i = 0; $i < $count; $i++)
-        {
-            // Pause processing to print out intermediate results
-            if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
-            {
-                $endTime = hrtime(true);
-                $totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S; // TODO fix using Profiler
-                
-                echo "$i/$count, took $totalTime s, +$good -$bad\n";
-                $good = 0;
-                $bad = 0;
-                
-                $startTime = hrtime(true);
-            }
-            
-            $res = $this->wordToSyllables($words[$i], $patterns);
-            
-            if ($res->isCorrect())
-                $good++;
-            else
-            {
-                $bad++;
-                $badWords[] = $res;
-            }
-            $outputWords[] = $res;
-        }
-        
-        echo "\nCompleted. Bad words (".count($badWords).", shown up to 30):\nInput, Expected, Actual:\n";
-        for ($i = 0; $i < min(count($badWords), 30); $i++)
-        {
-            echo $badWords[$i]->input.", "
-                .$badWords[$i]->expectedResult.", "
-                .$badWords[$i]->result."\n";
-        }
-    }
-	
 	// Main algorithm helper methods
     
 	/**
@@ -233,4 +174,66 @@ class Hyphenator
 		return $combined;
 	}
 	
+	// Unmaintained
+    
+    /**
+     * @param array<WordInput> $words
+     * @param array<HyphenationPattern> $patterns
+     * @param string $outputFilePath
+     */
+    public function processBatch(array $words, array $patterns, string $outputFilePath)
+    {
+        throw new NotImplementedException();
+        
+        /** @var array<WordResult> $outputWords */
+        $outputWords = [];
+        /** @var array<WordResult> WordResult $badWords */
+        $badWords = [];
+        
+        $count = count($words);
+        
+        echo "Batch processing $count words, output in $outputFilePath\n\n"
+            ."Items done, time taken, +correct -incorrect\n";;
+        
+        $good = 0;
+        $bad = 0;
+        $startTime = hrtime(true);
+        
+        for ($i = 0; $i < $count; $i++)
+        {
+            // Pause processing to print out intermediate results
+            if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
+            {
+                $endTime = hrtime(true);
+                $totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S; // TODO fix using Profiler
+                
+                echo "$i/$count, took $totalTime s, +$good -$bad\n";
+                $good = 0;
+                $bad = 0;
+                
+                $startTime = hrtime(true);
+            }
+            
+            $res = $this->wordToSyllables($words[$i], $patterns);
+            
+            if ($res->isCorrect())
+                $good++;
+            else
+            {
+                $bad++;
+                $badWords[] = $res;
+            }
+            $outputWords[] = $res;
+        }
+        
+        echo "\nCompleted. Bad words (".count($badWords).", shown up to 30):\nInput, Expected, Actual:\n";
+        for ($i = 0; $i < min(count($badWords), 30); $i++)
+        {
+            echo $badWords[$i]->input.", "
+                .$badWords[$i]->expectedResult.", "
+                .$badWords[$i]->result."\n";
+        }
+    }
+    
+    
 }

@@ -41,7 +41,7 @@ switch ($command) {
         (new InteractiveInput($reader, $logger, $argsHandler, $hyphenator, $writer, $wordRepo))->process();
         break;
     case 'text':
-        (new TextBlockInput($reader, $argsHandler, $hyphenator, $fileHandler))->process();
+        (new TextBlockInput($reader, $argsHandler, $hyphenator, $fileHandler, $wordRepo))->process();
         break;
     case 'batch':
         (new BatchProcess($reader, $hyphenator, $fileHandler))->process();

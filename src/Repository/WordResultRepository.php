@@ -9,8 +9,7 @@ use Exception;
 
 class WordResultRepository
 {
-    const BATCH_IMPORT_SIZE = 5000;
-    
+    const BATCH_IMPORT_SIZE = 3500;
     const TABLE = 'word';
     
     private DBConnection $db;
@@ -24,26 +23,63 @@ class WordResultRepository
         $this->logger = $logger;
     }
     
-    public function truncate(): void
+    public function findOne(string $inputWord, bool $joinPatterns = true): ?WordResult
     {
-        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
-        if (!$this->db->query($truncateSql))
+        $wordSql = sprintf('SELECT * FROM `%s` WHERE `input`=?', self::TABLE);
+        $resultsArray = $this->db->fetchClass($wordSql, [$inputWord], WordResult::class);
+        
+        if (count($resultsArray) === 0)
+            return null;
+        $wordResult = $resultsArray[0];
+        
+        if ($joinPatterns) {
+            $wordResult->setMatchedPatterns(
+                $this->wtpRepo->findByWord($wordResult->getId())
+            );
+        }
+        
+        return $wordResult;
+    }
+    
+    /**
+     * Find a list of words in DB.
+     * @param array<string> $words
+     * @return array<WordResult> inputWordString => WordResult obj
+     */
+    public function findMany(array $words): array
+    {
+        if (count($words) === 0)
             throw new Exception();
+                       
+        $sql = sprintf(
+            'SELECT * FROM `%s` WHERE `input` IN (%s',
+            self::TABLE,
+            str_repeat('?,', count($words))
+        );
+        $sql = substr($sql, 0, -1).')'; // remove trailing comma and add closing )
+        $wordResults = $this->db->fetchClass($sql, $words, WordResult::class);
+        $assocResults = []; // assoc results array, inputWordString => WordResult obj
+    
+        foreach ($wordResults as $result)
+            $assocResults[$result->getInput()] = $result;
+        
+        return $assocResults;
     }
     
     /**
      * @param array<WordResult> $words
      */
-    public function import(array $words): void
+    public function insertMany(array $words): void
     {
         $sqlHeader = sprintf('INSERT INTO `%s`(`id`, `input`, `result`) VALUES ', self::TABLE);
         $wordsSql = $sqlHeader;
         $wordsArgs = [];
         $lastCommitIndex = 0;
+        $autoIncrementId = $this->db->getNextAutoIncrementId(self::TABLE);
         
         for ($i = 0; $i < count($words); $i++) {
     
-            $words[$i]->setId($i + 1); // TODO use auto increment
+            $words[$i]->setId($autoIncrementId + $i);
             $wordsSql .= '(?, ?, ?),';
             array_push($wordsArgs, $words[$i]->getId(), $words[$i]->getInput(), $words[$i]->getResult());
             
@@ -72,24 +108,7 @@ class WordResultRepository
         }
     }
     
-    public function findOne(string $inputWord): ?WordResult
-    {
-        $wordSql = sprintf('SELECT * FROM `%s` WHERE `input`=?', self::TABLE);
-        $resultsArray = $this->db->fetchClass($wordSql, [$inputWord], WordResult::class);
-        
-        if (count($resultsArray) === 0)
-            return null;
-        
-        $wordResult = $resultsArray[0];
-    
-        $wordResult->setMatchedPatterns(
-            $this->wtpRepo->findByWord($wordResult->getId())
-        );
-        
-        return $wordResult;
-    }
-    
-    public function insert(WordResult $wordResult): void
+    public function insertOne(WordResult $wordResult): void
     {
         $wordSql = sprintf('INSERT INTO `%s`(`input`, `result`) VALUES (?,?)', self::TABLE);
         $wordArgs = [
@@ -105,5 +124,12 @@ class WordResultRepository
         if (!$this->db->query($patternsSql, $patternsArgs))
             throw new Exception();
         $this->db->commitTransaction();
+    }
+    
+    public function truncate(): void
+    {
+        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
+        if (!$this->db->query($truncateSql))
+            throw new Exception();
     }
 }

@@ -60,6 +60,8 @@ class InteractiveInput implements CommandInterface
             }
             if (empty($word))
                 continue;
+            
+            $word = strtolower($word); // TODO fix algorithm to ignore casing
             $this->processOneWord($word);
         }
     }
@@ -74,7 +76,7 @@ class InteractiveInput implements CommandInterface
             [$array, $tree] = $this->reader->getPatternMatchers('array');
             $wordResult = $this->hyphenator->wordToSyllables(new WordInput($input), $array, $tree);
             $this->writer->printFullWordResult($wordResult);
-            $this->wordRepo->insert($wordResult);
+            $this->wordRepo->insertOne($wordResult);
         }
     }
 }

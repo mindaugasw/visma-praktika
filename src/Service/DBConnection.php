@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Service\PsrLogger\LoggerInterface;
+use Exception;
+use mysql_xdevapi\Statement;
 use PDO;
 
 class DBConnection
@@ -15,7 +17,7 @@ class DBConnection
     
     private Config $config;
     
-    public PDO $connection; // TODO make private
+    private PDO $connection;
     private LoggerInterface $logger;
     
     public function __construct(Config $config, LoggerInterface $logger)
@@ -27,7 +29,7 @@ class DBConnection
     
     /**
      * @return PDO
-     * @throws \Exception
+     * @throws Exception
      */
     private function connect(): PDO
     {
@@ -97,9 +99,28 @@ class DBConnection
         $res = $statement->execute($params);
         
         if ($res === false)
-            throw new \Exception("Database error occurred");
+            throw new Exception("Database error occurred");
         
         return $this->connection->lastInsertId();
+    }
+    
+    public function getNextAutoIncrementId(string $tableName): int
+    {
+        $sql = sprintf(
+           'SELECT `AUTO_INCREMENT`
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = \'%s\'
+            AND TABLE_NAME = \'%s\'',
+            $this->config->get(self::CFG_DB_NAME),
+            $tableName
+        );
+        $statement = $this->connection->prepare($sql);
+        if (!$statement->execute())
+            throw new Exception();
+        $nextId = $statement->fetch(PDO::FETCH_NUM)[0];
+        if ($nextId === false)
+            throw new Exception();
+        return $nextId;
     }
     
     public function beginTransaction()
@@ -107,20 +128,22 @@ class DBConnection
         if ($this->connection->inTransaction())
             $this->logger->warning('Attempted to begin new transaction while already in a transaction');
         else if (!$this->connection->beginTransaction())
-            throw new \Exception('Could not begin transaction');
+            throw new Exception('Could not begin transaction');
     }
+    
     public function commitTransaction()
     {
         if (!$this->connection->inTransaction())
             $this->logger->warning('Attempted to commit transaction without starting it');
         else if (!$this->connection->commit())
-            throw new \Exception('Could not commit transaction');
+            throw new Exception('Could not commit transaction');
     }
+    
     public function rollbackTransaction()
     {
         if (!$this->connection->inTransaction())
-            throw new \Exception('Attempted to rollback transaction without starting it');
+            throw new Exception('Attempted to rollback transaction without starting it');
         else if (!$this->connection->rollBack())
-            throw new \Exception('Could not rollback transaction');
+            throw new Exception('Could not rollback transaction');
     }
 }

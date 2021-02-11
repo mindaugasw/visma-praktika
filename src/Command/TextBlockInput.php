@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\WordInput;
+use App\Repository\WordResultRepository;
 use App\Service\ArgsHandler;
 use App\Service\FileHandler;
 use App\Service\InputReader;
@@ -22,13 +23,21 @@ class TextBlockInput implements CommandInterface
     private ArgsHandler $argsHandler;
     private Hyphenator $hyphenator;
     private FileHandler $fileHandler;
+    private WordResultRepository $wordRepo;
     
-    public function __construct(InputReader $reader, ArgsHandler $argsHandler, Hyphenator $hyphenator, FileHandler $fileHandler)
+    public function __construct(
+        InputReader $reader,
+        ArgsHandler $argsHandler,
+        Hyphenator $hyphenator,
+        FileHandler $fileHandler,
+        WordResultRepository $wordRepo
+    )
     {
         $this->reader = $reader;
         $this->argsHandler = $argsHandler;
         $this->hyphenator = $hyphenator;
         $this->fileHandler = $fileHandler;
+        $this->wordRepo = $wordRepo;
     
         $argsHandler->addArgConfig(self::ARG_CLI_INPUT, 'i');
         $argsHandler->addArgConfig(self::ARG_FILE_INPUT, 'f');
@@ -50,6 +59,7 @@ class TextBlockInput implements CommandInterface
         } else
             throw new \Exception('No input provided');
         
+        $inputStr = strtolower($inputStr); // TODO fix algorithm to ignore casing
         $text = $this->processText($inputStr);
         $this->writeOutput($text);
     }
@@ -58,16 +68,40 @@ class TextBlockInput implements CommandInterface
     {
         [$array, $tree] = $this->reader->getPatternMatchers('tree');
     
-        return preg_replace_callback(
-            self::REGEX_WORD_SEPARATOR,
-            function ($matches) use ($array, $tree) {
-                return $this->hyphenator->wordToSyllables(
-                    new WordInput($matches[0]),
-                    $array,
-                    $tree)
-                    ->getResult();
-            },
-            $text);
+        $wordMatches = []; // words with their positions in text [[word, pos], ...]
+        preg_match_all(self::REGEX_WORD_SEPARATOR, $text, $wordMatches, PREG_OFFSET_CAPTURE);
+        $wordMatches = $wordMatches[0]; // remove extra nesting
+    
+        // map to 1D array and remove match position data
+        $wordInputs = array_map(function ($match) { return $match[0]; }, $wordMatches);
+        $wordResults = $this->wordRepo->findMany($wordInputs);
+        
+        $originalTextLength = strlen($text);
+        $newWords = []; // words found in $text but not in DB
+        
+        foreach ($wordMatches as $match) {
+            
+            // replace words found in DB
+            if (array_key_exists($match[0], $wordResults)) {// match[0] - word input string
+                $wordResult = $wordResults[$match[0]];
+            } else { // hyphenate word and replace it
+                $wordInput = new WordInput($match[0]);
+                $wordResult = $this->hyphenator->wordToSyllables($wordInput, $array, $tree);
+                $newWords[] = $wordResult;
+            }
+    
+            $text = substr_replace(
+                $text, // full text block, in which to replace
+                $wordResult->getResult(), // new string to replace with
+                strlen($text) - $originalTextLength + $match[1], // start index // accounts for moved index due already replaced words
+                strlen($match[0]) // length of the input word
+            );
+        }
+        
+        if (count($newWords) !== 0)
+            $this->wordRepo->insertMany($newWords);
+        
+        return $text;
     }
     
     private function writeOutput(string $text): void

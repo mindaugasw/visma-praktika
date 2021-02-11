@@ -205,7 +205,7 @@ class Hyphenator
             if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
             {
                 $endTime = hrtime(true);
-                $totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S; // TODO fix using Profiler
+                $totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S;
                 
                 echo "$i/$count, took $totalTime s, +$good -$bad\n";
                 $good = 0;

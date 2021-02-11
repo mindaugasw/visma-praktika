@@ -117,7 +117,7 @@ class ImportData implements CommandInterface
         
         $this->wtpRepo->truncate(); // truncated again in case truncate in pattern import was skipped
         $this->wordRepo->truncate();
-        $this->wordRepo->import($wordResults);
+        $this->wordRepo->insertMany($wordResults);
         $this->logger->info('Import successful');
     }
     

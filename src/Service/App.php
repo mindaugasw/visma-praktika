@@ -13,28 +13,42 @@ use Exception;
 
 class App
 {
-    private FileHandler $fileHandler;
-    private Config $config;
-    private Logger $logger;
-    private ArgsHandler $argsHandler;
-    private DBConnection $db;
-    private HyphenationPatternRepository $patternRepo;
-    private WordToPatternRepository $wtpRepo;
-    private WordResultRepository $wordRepo;
-    private InputReader $reader;
-    private OutputWriter $writer;
-    private Hyphenator $hyphenator;
+    public FileHandler $fileHandler;
+    public Config $config;
+    public Logger $logger;
+    public ArgsHandler $argsHandler;
+    public DBConnection $db;
+    public HyphenationPatternRepository $patternRepo;
+    public WordToPatternRepository $wtpRepo;
+    public WordResultRepository $wordRepo;
+    public InputReader $reader;
+    public OutputWriter $writer;
+    public Hyphenator $hyphenator;
+    public Router $router;
+    public ResponseCreator $responseCreator;
     
-    /** @var array CLI command and args */
-    private array $argv;
-    
-    public function __construct(array $argv)
+    public function __construct()
     {
-        $this->argv = $argv;
         $this->initializeServices();
-        $this->logger->debug('Starting application, "%s"', [implode(' ', $argv)]);
     
         $this->argsHandler->addArgConfig('method', 'm', false, ['array', 'tree']);
+    }
+    
+    public function autoChooseCommand(): void
+    {
+        $this->argsHandler->addArgConfig('command', 'c', true);
+        $command = $this->argsHandler->get('command');
+        $command = sprintf('command%s', ucfirst(strtolower($command)));
+        
+        if (!is_callable([$this, $command]))
+            throw new Exception(sprintf('Command "%s" not found', $command));
+        
+        $this->$command();
+    }
+    
+    public function httpRoute(): void
+    {
+        $this->router->route();
     }
     
     private function initializeServices(): void
@@ -50,18 +64,8 @@ class App
         $this->reader = new InputReader($this->argsHandler, $this->logger, $this->patternRepo);
         $this->writer = new OutputWriter();
         $this->hyphenator = new Hyphenator();
-    }
-    
-    public function autoChooseCommand(): void
-    {
-        $this->argsHandler->addArgConfig('command', 'c', true);
-        $command = $this->argsHandler->get('command');
-        $command = sprintf('command%s', ucfirst(strtolower($command)));
-        
-        if (!is_callable([$this, $command]))
-            throw new Exception(sprintf('Command "%s" not found', $command));
-        
-        $this->$command();
+        $this->router = new Router($this);
+        $this->responseCreator = new ResponseCreator();
     }
     
     public function commandInteractive(): void

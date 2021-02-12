@@ -6,7 +6,8 @@ require_once(__DIR__.'/../autoload.php');
 
 $app = new App();
 
-if (http_response_code() === false)
+if (http_response_code() === false) {
     $app->autoChooseCommand();
-else
+} else {
     $app->httpRoute();
+}

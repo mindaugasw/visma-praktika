@@ -23,8 +23,6 @@ class WordsController extends BaseController
         
         $this->responseCreator->genericResponse($data);
         
-        //echo 'this is get';
     }
-    
     
 }

@@ -30,7 +30,7 @@ class App
     public function __construct()
     {
         $this->initializeServices();
-    
+        
         $this->argsHandler->addArgConfig('method', 'm', false, ['array', 'tree']);
     }
     

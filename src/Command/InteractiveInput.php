@@ -68,7 +68,7 @@ class InteractiveInput implements CommandInterface
     
     private function processOneWord(string $input): void
     {
-        $wordResult = $this->wordRepo->findOne($input);
+        $wordResult = $this->wordRepo->findOneByInput($input);
         if ($wordResult !== null) {
             $this->writer->printMinimalWordResult($wordResult);
         } else {

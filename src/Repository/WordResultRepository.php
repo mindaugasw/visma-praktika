@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\WordResult;
+use App\Exception\ServerErrorException;
 use App\Service\DBConnection;
 use App\Service\PsrLogger\LoggerInterface;
 use Exception;
@@ -23,22 +24,16 @@ class WordResultRepository
         $this->logger = $logger;
     }
     
-    public function findOne(string $inputWord, bool $joinPatterns = true): ?WordResult
+    public function findOneByInput(string $inputWord, bool $joinPatterns = true): ?WordResult
     {
         $wordSql = sprintf('SELECT * FROM `%s` WHERE `input`=?', self::TABLE);
-        $resultsArray = $this->db->fetchClass($wordSql, [$inputWord], WordResult::class);
-        
-        if (count($resultsArray) === 0)
-            return null;
-        $wordResult = $resultsArray[0];
-        
-        if ($joinPatterns) {
-            $wordResult->setMatchedPatterns(
-                $this->wtpRepo->findByWord($wordResult->getId())
-            );
-        }
-        
-        return $wordResult;
+        return $this->findOne($wordSql, [$inputWord]);
+    }
+    
+    public function findOneById(int $id, bool $joinPatterns = true): ?WordResult
+    {
+        $wordSql = sprintf('SELECT * FROM `%s` WHERE `id`=%d', self::TABLE, $id);
+        return $this->findOne($wordSql, []);
     }
     
     /**
@@ -129,10 +124,37 @@ class WordResultRepository
         $this->db->commitTransaction();
     }
     
+    public function delete(WordResult $wordResult): void
+    {
+        $sql = sprintf('DELETE FROM `%s` WHERE `id`=%d', self::TABLE, $wordResult->getId());
+        $result = $this->db->query($sql);
+        
+        if ($result === false) {
+            throw new ServerErrorException('Could not delete item');
+        }
+    }
+    
     public function truncate(): void
     {
         $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
         if (!$this->db->query($truncateSql))
             throw new Exception();
+    }
+    
+    private function findOne(string $sqlQuery, array $sqlArgs, bool $joinPatterns = true): ?WordResult
+    {
+        $resultsArray = $this->db->fetchClass($sqlQuery, $sqlArgs, WordResult::class);
+        
+        if (count($resultsArray) === 0)
+            return null;
+        $wordResult = $resultsArray[0];
+        
+        if ($joinPatterns) {
+            $wordResult->setMatchedPatterns(
+                $this->wtpRepo->findByWord($wordResult->getId())
+            );
+        }
+        
+        return $wordResult;
     }
 }

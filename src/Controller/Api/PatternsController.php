@@ -40,6 +40,12 @@ class PatternsController extends BaseController
         return new JsonResponse($pattern);        
     }
     
+    /**
+     * Get paginated list of patterns
+     * Args: int $offset, int $limit
+     * @param array $args
+     * @return Response
+     */
     public function list_get(array $args): Response
     {
         $offset = $this->getArgOrDefault($args, 'offset', 0, false);

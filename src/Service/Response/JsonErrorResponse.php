@@ -13,7 +13,7 @@ class JsonErrorResponse extends JsonResponse
     
     public function __construct(?string $errorMsg = null, int $statusCode = 400, array $headers = [])
     {
-        if ($errorMsg === null) {
+        if (empty($errorMsg)) {
             if (isset(self::ERROR_MESSAGES[$statusCode])) {
                 $errorMsg = self::ERROR_MESSAGES[$statusCode];
             } else {

@@ -29,7 +29,7 @@ class HyphenationHandler
     
     public function processOneWord(string $input): WordResult
     {
-        $wordResult = $this->wordRepo->findOne($input);
+        $wordResult = $this->wordRepo->findOneByInput($input);
         if ($wordResult !== null) {
             return $wordResult;
         } else {

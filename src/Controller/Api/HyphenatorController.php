@@ -21,6 +21,7 @@ class HyphenatorController extends BaseController
     
     /**
      * Hyphenate a single word
+     * Args: string $word
      * @param array $args
      * @return Response
      */
@@ -39,6 +40,7 @@ class HyphenatorController extends BaseController
     
     /**
      * Hyphenate a block of text
+     * Args: string $text
      * @param array $args
      * @return Response
      */

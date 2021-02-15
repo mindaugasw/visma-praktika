@@ -2,7 +2,12 @@
 
 namespace App\Service;
 
+use App\Exception\HttpResponseExceptionInterface;
 use App\Exception\ObjectNotFoundException;
+use App\Exception\ServerErrorException;
+use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\Response;
+use App\Service\Response\ResponseHandler;
 
 class Router
 {
@@ -10,10 +15,12 @@ class Router
     const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
     
     private App $app;
+    private ResponseHandler $responseHandler;
     
-    public function __construct(App $app)
+    public function __construct(App $app, ResponseHandler $responseHandler)
     {
         $this->app = $app;
+        $this->responseHandler = $responseHandler;
     }
     
     /**
@@ -42,12 +49,27 @@ class Router
             }
         );
         
-        // find class
-        [$controllerObj, $actionPath] = $this->findClass($actionPath);
-        $methodName = $this->findMethod($controllerObj, $actionPath);
+        try {
+            // find class
+            [$controllerObj, $actionPath] = $this->findClass($actionPath);
+            $methodName = $this->findMethod($controllerObj, $actionPath);
+    
+            parse_str($url['query'], $queryArgs);
+            
+            // call action
+            $response = $controllerObj->$methodName($queryArgs);
+            if (!is_a($response, Response::class)) {
+                throw new ServerErrorException('Controller must return Response object');
+            }
+            
+        } catch (HttpResponseExceptionInterface $exception) {
+            $response = new JsonErrorResponse(
+                $exception->getMessage(),
+                $exception->getStatus()
+            );
+        }
         
-        parse_str($url['query'], $queryArgs);
-        $controllerObj->$methodName($queryArgs);
+        $this->responseHandler->returnResponse($response);
     }
     
     /**
@@ -100,10 +122,6 @@ class Router
         }
         
         throw new ObjectNotFoundException('Controller not found');
-        /*return [
-            false,
-            $actionPath
-        ];*/
     }
     
     /**
@@ -133,6 +151,6 @@ class Router
             }
         }
         
-        throw new ObjectNotFoundException('Controller method not found');
+        throw new ObjectNotFoundException('Action not found');
     }
 }

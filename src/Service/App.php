@@ -8,6 +8,7 @@ use App\Command\TextBlockInput;
 use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
+use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\Hyphenator\Hyphenator;
 use App\Service\PsrLogger\Logger;
 use App\Service\Response\ResponseHandler;
@@ -26,6 +27,7 @@ class App
     public InputReader $reader;
     public OutputWriter $writer;
     public Hyphenator $hyphenator;
+    public HyphenationHandler $hyphenationHandler;
     public Router $router;
     public ResponseHandler $responseHandler;
     
@@ -66,8 +68,9 @@ class App
         $this->reader = new InputReader($this->argsHandler, $this->logger, $this->patternRepo);
         $this->writer = new OutputWriter();
         $this->hyphenator = new Hyphenator();
-        $this->router = new Router($this);
+        $this->hyphenationHandler = new HyphenationHandler($this->hyphenator, $this->wordRepo, $this->reader);
         $this->responseHandler = new ResponseHandler();
+        $this->router = new Router($this, $this->responseHandler);
     }
     
     public function commandInteractive(): void

@@ -8,11 +8,9 @@ use App\Service\Response\ResponseHandler;
 
 abstract class BaseController
 {
-    protected ResponseHandler $responseHandler;
     
-    public function __construct(ResponseHandler $responseHandler)
+    public function __construct()
     {
-        $this->responseHandler = $responseHandler;
     }
     
     /**
@@ -33,10 +31,9 @@ abstract class BaseController
         if (isset($args[$key])) {
             return $args[$key];
         } elseif ($isRequired) {
-            $this->responseHandler->returnResponse(
-                new JsonErrorResponse(sprintf('Required query argument \'%s\' not found', $key), 400)
+            throw new BadRequestException(
+                sprintf('Required query argument \'%s\' not found', $key)
             );
-            throw new BadRequestException();
         } else {
             return $default;
         }

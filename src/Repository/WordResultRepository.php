@@ -110,8 +110,10 @@ class WordResultRepository
     
     public function insertOne(WordResult $wordResult): void
     {
-        $wordSql = sprintf('INSERT INTO `%s`(`input`, `result`) VALUES (?,?)', self::TABLE);
+        $wordResult->setId($this->db->getNextAutoIncrementId(self::TABLE));
+        $wordSql = sprintf('INSERT INTO `%s`(`id`, `input`, `result`) VALUES (?,?,?)', self::TABLE);
         $wordArgs = [
+            $wordResult->getId(),
             $wordResult->getInput(),
             $wordResult->getResult()
         ];

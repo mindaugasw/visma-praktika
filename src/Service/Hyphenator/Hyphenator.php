@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Hyphenator;
 
 use App\Entity\HyphenationPattern;
 use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
 use App\Exception\NotImplementedException;
+use App\Service\Profiler;
 use Exception;
 use SplFileObject;
 

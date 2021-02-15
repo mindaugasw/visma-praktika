@@ -37,6 +37,14 @@ class HyphenationPatternRepository
         }
     }
     
+    public function getPaginated(int $limit, int $offset): array
+    {
+        $sql = sprintf('SELECT * FROM `%s` LIMIT %d OFFSET %d', self::TABLE, $limit, $offset);
+        // TODO use proper mysql params with bindParam(PDO::PARAM_INT)
+        
+        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
+    }
+    
     /**
      * Truncate patterns table and import new ones
      * @param array<HyphenationPattern> $patterns

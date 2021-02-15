@@ -8,6 +8,7 @@ use App\Command\TextBlockInput;
 use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
+use App\Service\Hyphenator\Hyphenator;
 use App\Service\PsrLogger\Logger;
 use App\Service\Response\ResponseHandler;
 use Exception;

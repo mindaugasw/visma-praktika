@@ -31,8 +31,12 @@ class App
     public Router $router;
     public ResponseHandler $responseHandler;
     
+    private bool $isCliEnv;
+    
     public function __construct()
     {
+        $this->isCliEnv = http_response_code() === false;
+        
         $this->initializeServices();
         
         $this->argsHandler->addArgConfig('method', 'm', false, ['array', 'tree']);
@@ -59,7 +63,7 @@ class App
     {
         $this->fileHandler = new FileHandler();
         $this->config = new Config();
-        $this->logger = new Logger($this->fileHandler, $this->config);
+        $this->logger = new Logger($this, $this->fileHandler, $this->config);
         $this->argsHandler = new ArgsHandler();
         $this->db = new DBConnection($this->config, $this->logger);
         $this->patternRepo = new HyphenationPatternRepository($this->db);
@@ -107,5 +111,13 @@ class App
             $this->wtpRepo,
             $this->wordRepo
         ))->process();
+    }
+    
+    /**
+     * @return bool
+     */
+    public function isCliEnv(): bool
+    {
+        return $this->isCliEnv;
     }
 }

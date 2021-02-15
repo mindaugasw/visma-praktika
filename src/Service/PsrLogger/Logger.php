@@ -1,6 +1,7 @@
 <?php
 namespace App\Service\PsrLogger;
 
+use App\Service\App;
 use App\Service\Config;
 use App\Service\FileHandler;
 
@@ -13,15 +14,17 @@ class Logger extends AbstractLogger
     
     const DATETIME_FORMAT = 'Y-m-d H:i:s';
     
+    private App $app;
     private Config $config;
-    
     private FileHandler $fileHandler;
+    
     private \SplFileObject $logFile;
     private string $consoleLevel;
     private string $fileLevel;
     
-    public function __construct(FileHandler $fileHandler, Config $config)
+    public function __construct(App $app, FileHandler $fileHandler, Config $config)
     {
+        $this->app = $app;
         $this->fileHandler = $fileHandler;
         $this->config = $config;
         
@@ -45,7 +48,7 @@ class Logger extends AbstractLogger
     public function log($level, $message, array $context = [])
     {
         // log to console
-        if (LogLevel::shouldLog($level, $this->consoleLevel)) {
+        if ($this->app->isCliEnv() && LogLevel::shouldLog($level, $this->consoleLevel)) {
             echo vsprintf($message."\n", $context);
         }
         

@@ -9,6 +9,7 @@ use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
 use App\Service\PsrLogger\Logger;
+use App\Service\Response\ResponseHandler;
 use Exception;
 
 class App
@@ -25,7 +26,7 @@ class App
     public OutputWriter $writer;
     public Hyphenator $hyphenator;
     public Router $router;
-    public ResponseCreator $responseCreator;
+    public ResponseHandler $responseHandler;
     
     public function __construct()
     {
@@ -65,7 +66,7 @@ class App
         $this->writer = new OutputWriter();
         $this->hyphenator = new Hyphenator();
         $this->router = new Router($this);
-        $this->responseCreator = new ResponseCreator();
+        $this->responseHandler = new ResponseHandler();
     }
     
     public function commandInteractive(): void

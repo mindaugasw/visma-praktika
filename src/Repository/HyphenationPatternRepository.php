@@ -16,11 +16,25 @@ class HyphenationPatternRepository
         $this->db = $db;
     }
     
-    public function truncate(): void
+    /**
+     * @return array<HyphenationPattern>
+     */
+    public function getAll(): array
     {
-        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
-        if (!$this->db->query($truncateSql))
-            throw new \Exception();
+        $sql = sprintf('SELECT * FROM `%s`', self::TABLE);
+        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
+    }
+    
+    public function findOne(string $pattern): ?HyphenationPattern
+    {
+        $sql = sprintf('SELECT * FROM `%s` WHERE `pattern`=?', self::TABLE);
+        $results = $this->db->fetchClass($sql, [$pattern], HyphenationPattern::class);
+        
+        if (count($results) === 0) {
+            return null;
+        } else {
+            return $results[0];
+        }
     }
     
     /**
@@ -58,12 +72,11 @@ class HyphenationPatternRepository
             throw new \Exception('Error occurred during import');
     }
     
-    /**
-     * @return array<HyphenationPattern>
-     */
-    public function getAll(): array
+    public function truncate(): void
     {
-        $sql = sprintf('SELECT * FROM `%s`', self::TABLE);
-        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
+        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
+        if (!$this->db->query($truncateSql))
+            throw new \Exception();
     }
+   
 }

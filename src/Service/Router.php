@@ -114,9 +114,9 @@ class Router
      *
      * @param object $controller
      * @param array $actionPath
-     * @return mixed|string
+     * @return string
      */
-    private function findMethod(object $controller, array $actionPath)
+    private function findMethod(object $controller, array $actionPath): string
     {
         $methodNames = [];
         $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);

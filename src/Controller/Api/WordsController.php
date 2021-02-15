@@ -13,7 +13,7 @@ class WordsController extends BaseController
     
     public function __construct(App $app)
     {
-        $this->responseCreator = $app->responseCreator;
+        $this->responseCreator = $app->responseHandler;
     }
     
     public function get($args): void

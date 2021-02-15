@@ -29,9 +29,9 @@ class PatternsController extends BaseController
      */
     public function get(array $args): Response
     {
-        $patternArg = $this->getArgOrDefault($args, 'pattern', isRequired: true);
+        $patternId = intval($this->getArgOrDefault($args, 'id', isRequired: true));
         
-        $pattern = $this->patternRepo->findOne($patternArg);
+        $pattern = $this->patternRepo->findOne($patternId);
         
         if ($pattern === null) {
             return new JsonErrorResponse(statusCode: 404);

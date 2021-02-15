@@ -42,7 +42,7 @@ class WordResultRepository
     }
     
     /**
-     * Find a list of words in DB.
+     * Find a list of words in DB. Returns WordResult object only for found words
      * @param array<string> $words
      * @return array<WordResult> inputWordString => WordResult obj
      */
@@ -57,6 +57,7 @@ class WordResultRepository
             str_repeat('?,', count($words))
         );
         $sql = substr($sql, 0, -1).')'; // remove trailing comma and add closing )
+        
         $wordResults = $this->db->fetchClass($sql, $words, WordResult::class);
         $assocResults = []; // assoc results array, inputWordString => WordResult obj
     

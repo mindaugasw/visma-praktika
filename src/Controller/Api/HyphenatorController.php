@@ -7,6 +7,7 @@ use App\Service\App;
 use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\Response\JsonErrorResponse;
 use App\Service\Response\JsonResponse;
+use App\Service\Response\Response;
 
 class HyphenatorController extends BaseController
 {
@@ -18,11 +19,16 @@ class HyphenatorController extends BaseController
         $this->hyphenator = $app->hyphenationHandler;
     }
     
-    public function singleWord_post(array $args)
+    /**
+     * Hyphenate a single word
+     * @param array $args
+     * @return Response
+     */
+    public function singleWord_post(array $args): Response
     {
-        $word = $this->getArgOrDefault($args, 'word', isRequired: true);
+        $word = $this->getArgOrDefault($args, 'word');
         
-        if (str_contains($word, ' ')) {
+        if (str_contains($word, ' ') || empty($word)) {
             return new JsonErrorResponse(statusCode: 400);
         }
         
@@ -31,8 +37,23 @@ class HyphenatorController extends BaseController
         return new JsonResponse($wordResult);
     }
     
-    public function text_post(array $args)
+    /**
+     * Hyphenate a block of text
+     * @param array $args
+     * @return Response
+     */
+    public function text_post(array $args): Response
     {
+        $text = $this->getArgOrDefault($args, 'text');
         
+        if (empty($text)) {
+            return new JsonErrorResponse();
+        }
+        
+        $data = [
+            'text' => $this->hyphenator->processText($text) 
+        ];
+        
+        return new JsonResponse($data);
     }
 }

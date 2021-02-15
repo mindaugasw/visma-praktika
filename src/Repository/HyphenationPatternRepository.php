@@ -25,10 +25,10 @@ class HyphenationPatternRepository
         return $this->db->fetchClass($sql, [], HyphenationPattern::class);
     }
     
-    public function findOne(string $pattern): ?HyphenationPattern
+    public function findOne(int $patternId): ?HyphenationPattern
     {
-        $sql = sprintf('SELECT * FROM `%s` WHERE `pattern`=?', self::TABLE);
-        $results = $this->db->fetchClass($sql, [$pattern], HyphenationPattern::class);
+        $sql = sprintf('SELECT * FROM `%s` WHERE `id`=?', self::TABLE);
+        $results = $this->db->fetchClass($sql, [$patternId], HyphenationPattern::class);
         
         if (count($results) === 0) {
             return null;

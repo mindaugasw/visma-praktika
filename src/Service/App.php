@@ -8,6 +8,8 @@ use App\Command\TextBlockInput;
 use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
+use App\Service\DB\DBConnection;
+use App\Service\DB\QueryBuilder;
 use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\Hyphenator\Hyphenator;
 use App\Service\PsrLogger\Logger;
@@ -21,6 +23,7 @@ class App
     public Logger $logger;
     public ArgsHandler $argsHandler;
     public DBConnection $db;
+    public QueryBuilder $queryBuilder;
     public HyphenationPatternRepository $patternRepo;
     public WordToPatternRepository $wtpRepo;
     public WordResultRepository $wordRepo;
@@ -66,6 +69,7 @@ class App
         $this->logger = new Logger($this, $this->fileHandler, $this->config);
         $this->argsHandler = new ArgsHandler();
         $this->db = new DBConnection($this->config, $this->logger);
+        $this->queryBuilder = new QueryBuilder();
         $this->patternRepo = new HyphenationPatternRepository($this->db);
         $this->wtpRepo = new WordToPatternRepository($this->db);
         $this->wordRepo = new WordResultRepository($this->db, $this->wtpRepo, $this->logger);

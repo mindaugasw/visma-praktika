@@ -5,7 +5,8 @@ namespace App\Repository;
 use App\Entity\HyphenationPattern;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
-use App\Service\DBConnection;
+use App\Service\DB\DBConnection;
+use App\Service\DB\QueryBuilder;
 
 class WordToPatternRepository
 {
@@ -20,7 +21,10 @@ class WordToPatternRepository
     
     public function truncate(): void
     {
-        $truncateSql = sprintf('TRUNCATE `%s`', self::TABLE);
+        //$truncateSql = sprintf('TRUNCATE `%s`', self::TABLE); // TODO remove
+        $truncateSql = (new QueryBuilder())
+            ->truncate(self::TABLE)
+            ->getQuery();
         
         if (!$this->db->query($truncateSql)) {
             throw new \Exception('Error occurred during import');

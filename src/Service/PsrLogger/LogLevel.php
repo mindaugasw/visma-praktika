@@ -5,7 +5,7 @@ namespace App\Service\PsrLogger;
 /**
  * Describes log levels.
  */
-class LogLevel
+class LogLevel extends \Psr\Log\LogLevel
 {
     /** @var string System is unusable */
     const EMERGENCY = 'emergency';

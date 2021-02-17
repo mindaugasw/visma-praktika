@@ -6,8 +6,8 @@ use App\Entity\WordResult;
 use App\Exception\ServerErrorException;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
-use App\Service\PsrLogger\LoggerInterface;
 use Exception;
+use Psr\Log\LoggerInterface;
 
 class WordResultRepository
 {

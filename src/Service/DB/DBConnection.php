@@ -3,9 +3,9 @@
 namespace App\Service\DB;
 
 use App\Service\Config;
-use App\Service\PsrLogger\LoggerInterface;
 use Exception;
 use PDO;
+use Psr\Log\LoggerInterface;
 
 class DBConnection
 {

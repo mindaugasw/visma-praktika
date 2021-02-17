@@ -8,7 +8,7 @@ use App\Service\ArgsHandler;
 use App\Service\InputReader;
 use App\Service\OutputWriter;
 use App\Service\Hyphenator\Hyphenator;
-use App\Service\PsrLogger\LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class InteractiveInput implements CommandInterface
 {

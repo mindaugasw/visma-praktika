@@ -8,8 +8,8 @@ use App\Entity\HyphenationPattern;
 use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
 use App\Repository\HyphenationPatternRepository;
-use App\Service\PsrLogger\LoggerInterface;
 use Exception;
+use Psr\Log\LoggerInterface;
 use SplFileObject;
 
 class InputReader

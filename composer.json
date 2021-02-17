@@ -1,0 +1,23 @@
+{
+	"require": {
+
+	},
+	"autoload": {
+		"psr-4": {
+			"App\\": "src/",
+			"App\\Command\\": "src/Command/",
+			"App\\Controller\\": "src/Controller/",
+			"App\\Controller\\Api\\": "src/Controller/Api/",
+			"App\\DataStructure\\": "src/DataStructure/",
+			"App\\DataStructure\\Trie\\": "src/DataStructure/Trie/",
+			"App\\Entity\\": "src/Entity/",
+			"App\\Exception\\": "src/Exception/",
+			"App\\Repository\\": "src/Repository/",
+			"App\\Service\\": "src/Service/",
+			"App\\Service\\DB\\": "src/Service/DB/",
+			"App\\Service\\Hyphenator\\": "src/Service/Hyphenator/",
+			"App\\Service\\PsrLogger\\": "src/Service/PsrLogger/",
+			"App\\Service\\Response\\": "src/Service/Response/"
+		}
+	}
+}

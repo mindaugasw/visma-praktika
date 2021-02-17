@@ -51,7 +51,11 @@ class WordToPatternRepository
             ->values('?,?,?', $patternsCount)
             ->getQuery();
         
-        return [$sql, $args];
+        if ($patternsCount !== 0) {
+            return [$sql, $args];
+        } else {
+            return [null, []]; // no matched patterns
+        }
     }
     
     public function findByWord(int $wordId): array

@@ -2,34 +2,46 @@
 
 namespace App\Service\Hyphenator;
 
+use App\DataStructure\TextSearchInterface;
 use App\Entity\HyphenationPattern;
-use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
 use App\Exception\NotImplementedException;
 use App\Service\Profiler;
 use Exception;
-use SplFileObject;
 
 class Hyphenator
 {
-	//private const ITEMS_IN_ONE_BATCH = 100;
+	//private const ITEMS_IN_ONE_BATCH = 100; // TODO remove
 	
     /**
      * Syllabize one word
      * @param WordInput $inputObj Word to syllabize
-     * @param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTree is provided
-     * @param ?Trie $patternsTree Tree for patterns search. Can be null if $patternsArray ir provided
+     * param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTree is provided // TODO remove
+     * param ?Trie $patternsTree Tree for patterns search. Can be null if $patternsArray ir provided // TODO remove
+     * @param TextSearchInterface $textSearch Data structure for handling text search. Should be already initialized with all patterns
      * @return WordResult
      */
-	public function wordToSyllables(WordInput $inputObj, ?array $patternsArray, ?Trie $patternsTree = null): WordResult
+	public function wordToSyllables(WordInput $inputObj, TextSearchInterface $textSearch): WordResult
 	{
 		$timer = Profiler::start();
 		$result = new WordResult($inputObj);
 		
-		if ($patternsArray !== null) { // Use pattern array for search
+		// find all patterns
+		$result->setMatchedPatterns(
+		    $textSearch->findMatches($inputObj->getInput())
+        );
+        
+		// add to number matrix
+        foreach ($result->getMatchedPatterns() as $matchedPattern) {
+            $result->addToNumberMatrix(
+                $this->buildMatrixRow($inputObj->getInput(), $matchedPattern)
+            );
+		}
+		
+		/*if ($patternsArray !== null) { // Use pattern array for search
 		    foreach ($patternsArray as $patternOriginal) {
-                /** @var HyphenationPattern $pattern Current pattern */
+                /** @var HyphenationPattern $pattern Current pattern *
                 $pattern = clone $patternOriginal; // clone to set position specifically for this word
                 // TODO doesn't work if same pattern is multiple times in the word: only 1st occurrence is returned
                 $pos = $this->findPatternInWord($inputObj->getInput(), $pattern);
@@ -54,7 +66,7 @@ class Hyphenator
             }
 		    
         } else
-            throw new Exception('No method selected for pattern search');
+            throw new Exception('No method selected for pattern search');*/
 		
 		$this->setResultValues($result);
 		$result->setTime(Profiler::stop($timer));
@@ -63,15 +75,16 @@ class Hyphenator
     
 	// Main algorithm helper methods
     
-	/**
+	/*
 	 * Find if this $pattern exists in $input and return its position or -1 
      * Causes 30-50% #performance drop comparing with inlining
 	 * @param string $input
 	 * @param HyphenationPattern $pattern
 	 * @return int Pattern position in $input or -1 if not found
 	 */
-	private function findPatternInWord(string $input, HyphenationPattern $pattern): int
+	/*private function findPatternInWord(string $input, HyphenationPattern $pattern): int
 	{
+	    // TODO remove
 		$position = strpos($input, $pattern->getPatternText());
 		
 		// pattern not found
@@ -87,7 +100,7 @@ class Hyphenator
 			return -1;
 		
 		return $position;
-	}
+	}*/
 	
 	/**
 	 * Builds single matrix row for single pattern.
@@ -177,18 +190,19 @@ class Hyphenator
 	
 	// Unmaintained
     
-    /**
+    /*
      * @param array<WordInput> $words
      * @param array<HyphenationPattern> $patterns
      * @param string $outputFilePath
      */
-    public function processBatch(array $words, array $patterns, string $outputFilePath)
+    /*public function processBatch(array $words, array $patterns, string $outputFilePath)
     {
+        // TODO remove
         throw new NotImplementedException();
         
-        /** @var array<WordResult> $outputWords */
+        /** @var array<WordResult> $outputWords *
         $outputWords = [];
-        /** @var array<WordResult> WordResult $badWords */
+        /** @var array<WordResult> WordResult $badWords *
         $badWords = [];
         
         $count = count($words);
@@ -234,7 +248,7 @@ class Hyphenator
                 .$badWords[$i]->expectedResult.", "
                 .$badWords[$i]->result."\n";
         }
-    }
+    }*/
     
     
 }

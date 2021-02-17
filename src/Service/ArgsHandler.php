@@ -10,6 +10,8 @@ use Exception;
  */
 class ArgsHandler
 {
+    private App $app;
+    
     private array $argsConfig; /* = [   // example config
         'input' => [
             'long' => 'input',
@@ -22,9 +24,10 @@ class ArgsHandler
     ]*/
     private array $parsedArgs;
     
-    public function __construct()
+    public function __construct(App $app)
     {
         $this->argsConfig = [];
+        $this->app = $app;
     }
     
     /**
@@ -32,9 +35,13 @@ class ArgsHandler
      * @param ?string $short Short version key
      * @param bool $isRequired If required argument isn't passed, will throw exception
      * @param array<string> $values Allowed values, optional (will accept any value then)
+     * @return bool Was operation successful? Can be false if called in http environment
      */
-    public function addArgConfig(string $long, string $short = null, bool $isRequired = false, array $values = []): void
+    public function addArgConfig(string $long, string $short = null, bool $isRequired = false, array $values = []): bool
     {
+        if (!$this->app->isCliEnv())
+            return false;
+        
         foreach ($this->argsConfig as $singleConf) {
             if ($singleConf['long'] === $long || $singleConf['short'] === $short)
                 throw new Exception(sprintf('Argument key %s/%s already exists', $long, $short));
@@ -48,6 +55,8 @@ class ArgsHandler
         ];
         
         $this->parseArgs();
+        
+        return true;
     }
     
     public function isSet(string $key): bool

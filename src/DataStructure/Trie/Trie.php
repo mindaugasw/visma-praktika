@@ -1,8 +1,10 @@
 <?php
 namespace App\DataStructure\Trie;
 
+use App\DataStructure\TextSearchInterface;
+
 // What is Trie: https://uploads.toptal.io/blog/image/106/toptal-blog-3_F.png
-class Trie
+class Trie implements TextSearchInterface
 {
     private Node $rootNode;
     private int $nodesCount = 0;
@@ -13,26 +15,52 @@ class Trie
         $this->rootNode = new Node('', '');
     }
     
+    /**
+     * @inheritDoc
+     */
+    public static function constructFromArray(array $array): static
+    {
+        $tree = new Trie();
+    
+        foreach ($array as $element) {
+            $tree->addValue($element->getPattern(), $element); // TODO make DS more reusable
+        }
+        
+        return $tree;
+    }
+    
+    /**
+     * @inheritDoc 
+     */
+    public static function constructFromDictionary(array $dictionary): static
+    {
+        $tree = new Trie();
+        
+        foreach ($dictionary as $key => $value) {
+            $tree->addValue($key, $value);
+        }
+        
+        return $tree;
+    }
+    
     public function __toString()
     {
         return $this->rootNode->__toString();
     }
     
-    /**
-     * Get array of all matches for given text
-     * @param string $input
-     * @return array Array of $value from matched end nodes
+    /** 
+     * @inheritDoc
      */
-    public function findMatches(string $input)
+    public function findMatches(string $text): array
     {
         $matches = []; // stores $value from matched endNodes
         $nodesSearched = 0;
         
         // perform search from each character
-        for ($i = 0; $i < strlen($input); $i++) {
+        for ($i = 0; $i < strlen($text); $i++) {
             $node = $this->rootNode;
             
-            $remainingInput = substr($input, $i);
+            $remainingInput = substr($text, $i);
             
             while (true) {
                 $char = substr($remainingInput, 0, 1);
@@ -63,12 +91,12 @@ class Trie
     
     /**
      * Create an end node with given $value and all nodes to reach it
-     * @param string $fullPath Search string, i.e. full path towards end node
+     * @param string $key Search string, i.e. full path towards end node
      * @param object $value Value that will be returned when this pattern matches
      */
-    public function addValue(string $fullPath, object $value): void
+    public function addValue(string $key, mixed $value): void
     {
-        [$pathChar, $remainingPath] = $this->advancePathStrings($fullPath);
+        [$pathChar, $remainingPath] = $this->advancePathStrings($key);
         $node = $this->rootNode;
         
         while (true) {
@@ -78,16 +106,16 @@ class Trie
                 $node = $deeperNode;
     
                 if (strlen($remainingPath) === 0)
-                    throw new \Exception(sprintf('Algorithm error while adding "%s" to the tree', $fullPath));
+                    throw new \Exception(sprintf('Algorithm error while adding "%s" to the tree', $key));
     
                 [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
                 
             } else { // create new node and continue search in it (if not end node)
                 
-                $newNode = new Node($pathChar, substr($fullPath, 0, $node->getDepth() + 1));
+                $newNode = new Node($pathChar, substr($key, 0, $node->getDepth() + 1));
                 $node->addChild($newNode);
                 $node = $newNode;
-                $this->nodesCount++; 
+                $this->nodesCount++;
     
                 if (strlen($remainingPath) !== 0) { // continue search deeper
                     [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
@@ -99,6 +127,22 @@ class Trie
                 }
             }
         }
+    }
+    
+    /**
+     * @return int
+     */
+    public function getNodesCount(): int
+    {
+        return $this->nodesCount;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getEndNodesCount(): int
+    {
+        return $this->endNodesCount;
     }
     
     /**
@@ -118,20 +162,4 @@ class Trie
         ];
     }
     
-    
-    /**
-     * @return int
-     */
-    public function getNodesCount(): int
-    {
-        return $this->nodesCount;
-    }
-    
-    /**
-     * @return int
-     */
-    public function getEndNodesCount(): int
-    {
-        return $this->endNodesCount;
-    }
 }

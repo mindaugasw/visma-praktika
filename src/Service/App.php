@@ -67,7 +67,7 @@ class App
         $this->fileHandler = new FileHandler();
         $this->config = new Config();
         $this->logger = new Logger($this, $this->fileHandler, $this->config);
-        $this->argsHandler = new ArgsHandler();
+        $this->argsHandler = new ArgsHandler($this);
         $this->db = new DBConnection($this->config, $this->logger);
         $this->queryBuilder = new QueryBuilder();
         $this->patternRepo = new HyphenationPatternRepository($this->db);

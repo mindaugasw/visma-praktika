@@ -4,6 +4,8 @@
 namespace App\Service\Hyphenator;
 
 
+use App\DataStructure\HashTable;
+use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
 use App\Repository\WordResultRepository;
@@ -29,12 +31,15 @@ class HyphenationHandler
     
     public function processOneWord(string $input): WordResult
     {
+        // find in db
         $wordResult = $this->wordRepo->findOneByInput($input);
         if ($wordResult !== null) {
             return $wordResult;
         } else {
-            [$array, $tree] = $this->reader->getPatternMatchers('array');
-            $wordResult = $this->hyphenator->wordToSyllables(new WordInput($input), $array, $tree);
+            // hyphenate new word
+            $searchDS = $this->reader->getPatternSearchDS(HashTable::class);
+            //[$array, $tree] = $this->reader->getPatternMatchers('array'); // TODO remove
+            $wordResult = $this->hyphenator->wordToSyllables(new WordInput($input), $searchDS);
             $this->wordRepo->insertOne($wordResult);
             return $wordResult;
         }
@@ -106,7 +111,7 @@ class HyphenationHandler
      * 3rd algorithm step
      * Select new words from this text block (those not found in DB).
      * Add keys for those words to $wordResults.
-     * Make new array of only words - $newWords. 
+     * Make new array of only words - $newWords.
      * @param array<string> $wordStrings All words in text block
      * @param array<WordResult> $wordResults Words found in DB. Original array will be mutated (added keys for missing words)
      * @return array<string> Array of words existing in text but not in DB
@@ -114,7 +119,7 @@ class HyphenationHandler
     private function filterOutNewWords(array $wordStrings, array &$wordResults): array
     {
         $newWords = []; // words found in $text but not in DB
-    
+        
         // filter out new words (those not found in DB).
         // add them to $wordResults and $newWords
         foreach ($wordStrings as $wordInputString) {
@@ -139,13 +144,18 @@ class HyphenationHandler
     {
         $hyphenatedNewWords = [];
         
-        [$array, $tree] = $this->reader->getPatternMatchers(count($newWords) > 6 ? 'tree' : 'array'); // only build tree if there's many new words
+        //[$array, $tree] = $this->reader->getPatternMatchers(count($newWords) > 6 ? 'tree' : 'array'); // only build tree if there's many new words
+        
+        $searchDS = $this->reader->getPatternSearchDS(
+            count($newWords) > 6 ?
+                Trie::class :
+                HashTable::class
+        );
         
         foreach ($newWords as $newWord) {
             $wordResult = $this->hyphenator->wordToSyllables(
                 new WordInput($newWord),
-                $array,
-                $tree
+                $searchDS
             );
             
             $hyphenatedNewWords[] = $wordResult;
@@ -170,7 +180,8 @@ class HyphenationHandler
             $text = substr_replace(
                 $text, // full text block, in which to replace
                 $wordResults[$match[0]]->getResult(), // new string to replace with
-                strlen($text) - $originalTextLength + $match[1], // start index. Accounts for moved index due already replaced words
+                strlen($text) - $originalTextLength + $match[1],
+                // start index. Accounts for moved index due already replaced words
                 strlen($match[0]) // length of the input word (how much to replace)
             );
         }

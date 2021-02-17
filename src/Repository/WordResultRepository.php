@@ -135,8 +135,11 @@ class WordResultRepository
         $this->db->beginTransaction();
         $lastId = $this->db->insert($wordSql, $wordArgs);
         $patternsArgs[0] = $lastId;
-        if (!$this->db->query($patternsSql, $patternsArgs))
-            throw new Exception();
+        if ($patternsSql !== null) { // null - no matched patterns
+            if (!$this->db->query($patternsSql, $patternsArgs)) {
+                throw new Exception();
+            }
+        }
         $this->db->commitTransaction();
     }
     

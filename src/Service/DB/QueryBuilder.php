@@ -122,6 +122,12 @@ class QueryBuilder
         return $this;
     }
     
+    public function joinOn(string $joinedTable, string $on): static
+    {
+        $this->query .= sprintf(' JOIN %s ON %s ', $joinedTable, $on);
+        return $this;
+    }
+    
     public function truncate(string $table): static
     {
         $this->query = sprintf('TRUNCATE %s ', $table);

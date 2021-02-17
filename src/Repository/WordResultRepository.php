@@ -119,7 +119,6 @@ class WordResultRepository
     public function insertOne(WordResult $wordResult): void
     {
         $wordResult->setId($this->db->getNextAutoIncrementId(self::TABLE));
-        //$wordSql = sprintf('INSERT INTO `%s`(`id`, `input`, `result`) VALUES (?,?,?)', self::TABLE);
         $wordSql = (new QueryBuilder())
             ->insertInto(self::TABLE, ['id', 'input', 'result'])
             ->values('?, ?, ?', 1)

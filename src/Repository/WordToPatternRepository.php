@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\HyphenationPattern;
-use App\Entity\WordInput;
 use App\Entity\WordResult;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
@@ -21,7 +20,6 @@ class WordToPatternRepository
     
     public function truncate(): void
     {
-        //$truncateSql = sprintf('TRUNCATE `%s`', self::TABLE); // TODO remove
         $truncateSql = (new QueryBuilder())
             ->truncate(self::TABLE)
             ->getQuery();
@@ -38,32 +36,38 @@ class WordToPatternRepository
      */
     public function buildImportQuery(array $words): array
     {
-        $sql = sprintf('INSERT INTO `%s`(`word_id`, `pattern_id`, `position`) VALUES ', self::TABLE);
         $args = [];
+        $patternsCount = 0;
         foreach ($words as $word) {
             foreach ($word->getMatchedPatterns() as $pattern) {
-                $sql .= '(?,?,?),';
+                //$sql .= '(?,?,?),';
+                $patternsCount++;
                 array_push($args, $word->getId(), $pattern->getId(), $pattern->getPosition());
             }
         }
-        $sql = substr($sql, 0, -1); // remove trailing comma
+        
+        $sql = (new QueryBuilder())
+            ->insertInto(self::TABLE, ['word_id', 'pattern_id', 'position'])
+            ->values('?,?,?', $patternsCount)
+            ->getQuery();
+        
         return [$sql, $args];
     }
     
     public function findByWord(int $wordId): array
     {
-        $sql = sprintf(
-            'SELECT
-                `%1$s`.`position`,
-                `%2$s`.*
-            FROM
-                `%1$s`
-            JOIN `%2$s` ON `%1$s`.`pattern_id` = `%2$s`.`id`
-            WHERE
-                `%1$s`.`word_id` = ?',
-            self::TABLE,
-            HyphenationPatternRepository::TABLE
-        );
+        $sql = (new QueryBuilder())
+            ->select(self::TABLE.'.position', HyphenationPatternRepository::TABLE.'.*')
+            ->from(self::TABLE)
+            ->joinOn(
+                HyphenationPatternRepository::TABLE,
+                sprintf(
+                    '%s.pattern_id=%s.id',
+                    self::TABLE,
+                    HyphenationPatternRepository::TABLE))
+            ->where(self::TABLE.'.word_id=?')
+            ->getQuery();
+        
         return $this->db->fetchClass($sql, [$wordId], HyphenationPattern::class);
     }
 }

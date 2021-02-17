@@ -65,16 +65,10 @@ class HyphenationPatternRepository
      */
     public function import(array $patterns): void
     {
-        // TODO remove
-        //$insertSql = sprintf('INSERT INTO `%s`(`pattern`, `patternNoDot`, `patternNoNumbers`, `patternText`, `patternType`) VALUES ', self::TABLE);
         $insertArgs = [];
         
         for ($i = 0, $len = count($patterns); $i < $len; $i++) {
             $p = $patterns[$i];
-            //$insertSql .= '(?,?,?,?,?)';
-            
-            //if ($i !== $len - 1)
-            //    $insertSql .= ',';
             
             array_push(
                 $insertArgs,
@@ -101,7 +95,6 @@ class HyphenationPatternRepository
     
     public function truncate(): void
     {
-        //$truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK // TODO remove
         $truncateSql = (new QueryBuilder())
             ->delete() // can't TRUNCATE cause of FKs
             ->from(self::TABLE)

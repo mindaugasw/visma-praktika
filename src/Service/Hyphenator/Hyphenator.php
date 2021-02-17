@@ -6,19 +6,14 @@ use App\DataStructure\TextSearchInterface;
 use App\Entity\HyphenationPattern;
 use App\Entity\WordInput;
 use App\Entity\WordResult;
-use App\Exception\NotImplementedException;
 use App\Service\Profiler;
-use Exception;
 
 class Hyphenator
 {
-	//private const ITEMS_IN_ONE_BATCH = 100; // TODO remove
 	
     /**
      * Syllabize one word
      * @param WordInput $inputObj Word to syllabize
-     * param ?array<HyphenationPattern> $patternsArray Pattern array. Can be null if $patternsTree is provided // TODO remove
-     * param ?Trie $patternsTree Tree for patterns search. Can be null if $patternsArray ir provided // TODO remove
      * @param TextSearchInterface $textSearch Data structure for handling text search. Should be already initialized with all patterns
      * @return WordResult
      */
@@ -38,36 +33,7 @@ class Hyphenator
                 $this->buildMatrixRow($inputObj->getInput(), $matchedPattern)
             );
 		}
-		
-		/*if ($patternsArray !== null) { // Use pattern array for search
-		    foreach ($patternsArray as $patternOriginal) {
-                /** @var HyphenationPattern $pattern Current pattern *
-                $pattern = clone $patternOriginal; // clone to set position specifically for this word
-                // TODO doesn't work if same pattern is multiple times in the word: only 1st occurrence is returned
-                $pos = $this->findPatternInWord($inputObj->getInput(), $pattern);
-                
-                if ($pos !== -1) {
-                    $pattern->setPosition($pos);
-                    $result->addMatchedPattern($pattern);
-                    $result->addToNumberMatrix(
-                        $this->buildMatrixRow($inputObj->getInput(), $pattern)
-                    );
-                }
-            }
-            
-        } else if ($patternsTree !== null) { // use pattern tree for search
-		    
-		    $result->setMatchedPatterns($patternsTree->findMatches($inputObj->getInputWithDots()));
-		    
-		    foreach ($result->getMatchedPatterns() as $pattern) {
-		        $result->addToNumberMatrix(
-		            $this->buildMatrixRow($inputObj->getInput(), $pattern)
-                );
-            }
-		    
-        } else
-            throw new Exception('No method selected for pattern search');*/
-		
+        
 		$this->setResultValues($result);
 		$result->setTime(Profiler::stop($timer));
 		return $result;
@@ -75,33 +41,6 @@ class Hyphenator
     
 	// Main algorithm helper methods
     
-	/*
-	 * Find if this $pattern exists in $input and return its position or -1 
-     * Causes 30-50% #performance drop comparing with inlining
-	 * @param string $input
-	 * @param HyphenationPattern $pattern
-	 * @return int Pattern position in $input or -1 if not found
-	 */
-	/*private function findPatternInWord(string $input, HyphenationPattern $pattern): int
-	{
-	    // TODO remove
-		$position = strpos($input, $pattern->getPatternText());
-		
-		// pattern not found
-		if ($position === false)
-			return -1;
-		
-		// start pattern isn't at the start
-		if ($pattern->isStartPattern() && $position !== 0)
-			return -1;
-		
-		// end pattern isn't at the end
-		if ($pattern->isEndPattern() && $position + strlen($pattern->getPatternText()) !== strlen($input))
-			return -1;
-		
-		return $position;
-	}*/
-	
 	/**
 	 * Builds single matrix row for single pattern.
 	 * I.e. maps pattern numbers to specific positions in the word
@@ -188,67 +127,4 @@ class Hyphenator
 		return $combined;
 	}
 	
-	// Unmaintained
-    
-    /*
-     * @param array<WordInput> $words
-     * @param array<HyphenationPattern> $patterns
-     * @param string $outputFilePath
-     */
-    /*public function processBatch(array $words, array $patterns, string $outputFilePath)
-    {
-        // TODO remove
-        throw new NotImplementedException();
-        
-        /** @var array<WordResult> $outputWords *
-        $outputWords = [];
-        /** @var array<WordResult> WordResult $badWords *
-        $badWords = [];
-        
-        $count = count($words);
-        
-        echo "Batch processing $count words, output in $outputFilePath\n\n"
-            ."Items done, time taken, +correct -incorrect\n";;
-        
-        $good = 0;
-        $bad = 0;
-        $startTime = hrtime(true);
-        
-        for ($i = 0; $i < $count; $i++)
-        {
-            // Pause processing to print out intermediate results
-            if ($i % self::ITEMS_IN_ONE_BATCH === 0 && $i !== 0)
-            {
-                $endTime = hrtime(true);
-                $totalTime = -1;// ($endTime - $startTime) / self::TIME_DIVISOR_S;
-                
-                echo "$i/$count, took $totalTime s, +$good -$bad\n";
-                $good = 0;
-                $bad = 0;
-                
-                $startTime = hrtime(true);
-            }
-            
-            $res = $this->wordToSyllables($words[$i], $patterns);
-            
-            if ($res->isCorrect())
-                $good++;
-            else
-            {
-                $bad++;
-                $badWords[] = $res;
-            }
-            $outputWords[] = $res;
-        }
-        
-        echo "\nCompleted. Bad words (".count($badWords).", shown up to 30):\nInput, Expected, Actual:\n";
-        for ($i = 0; $i < min(count($badWords), 30); $i++)
-        {
-            echo $badWords[$i]->input.", "
-                .$badWords[$i]->expectedResult.", "
-                .$badWords[$i]->result."\n";
-        }
-    }*/
-    
-    
 }

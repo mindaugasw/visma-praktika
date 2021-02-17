@@ -38,7 +38,6 @@ class HyphenationHandler
         } else {
             // hyphenate new word
             $searchDS = $this->reader->getPatternSearchDS(HashTable::class);
-            //[$array, $tree] = $this->reader->getPatternMatchers('array'); // TODO remove
             $wordResult = $this->hyphenator->wordToSyllables(new WordInput($input), $searchDS);
             $this->wordRepo->insertOne($wordResult);
             return $wordResult;
@@ -143,8 +142,6 @@ class HyphenationHandler
     private function hyphenateNewWords(array $newWords, array &$wordResults): array
     {
         $hyphenatedNewWords = [];
-        
-        //[$array, $tree] = $this->reader->getPatternMatchers(count($newWords) > 6 ? 'tree' : 'array'); // only build tree if there's many new words
         
         $searchDS = $this->reader->getPatternSearchDS(
             count($newWords) > 6 ?

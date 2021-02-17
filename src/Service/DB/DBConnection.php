@@ -106,14 +106,24 @@ class DBConnection
     
     public function getNextAutoIncrementId(string $tableName): int
     {
-        $sql = sprintf( // TODO replace with QueryBuilder
+        /*$sql = sprintf(
            'SELECT `AUTO_INCREMENT`
             FROM INFORMATION_SCHEMA.TABLES
             WHERE TABLE_SCHEMA = \'%s\'
             AND TABLE_NAME = \'%s\'',
             $this->config->get(self::CFG_DB_NAME),
             $tableName
-        );
+        );*/
+        
+        $sql = (new QueryBuilder())
+            ->select('AUTO_INCREMENT')
+            ->from('INFORMATION_SCHEMA.TABLES')
+            ->where(sprintf(
+                'TABLE_SCHEMA = \'%s\' AND TABLE_NAME = \'%s\'',
+                $this->config->get(self::CFG_DB_NAME),
+                $tableName))
+            ->getQuery();
+        
         $statement = $this->connection->prepare($sql);
         if (!$statement->execute())
             throw new Exception();

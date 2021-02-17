@@ -23,7 +23,6 @@ class InputReader
     
     private ?HashTable $patternHashTable = null;
     private ?Trie $patternTree = null;
-    //private ?array $patternArrayNew = null; // TODO rename
     
     public function __construct(ArgsHandler $argsHandler, LoggerInterface $logger, HyphenationPatternRepository $patternRepo)
     {
@@ -105,12 +104,11 @@ class InputReader
      * @param string $defaultDS class name of default data structure to choose
      *                          if CLI arg isn't provided
      * @param bool $useDb If true, will read patterns from DB. If False, will read from default file.
-     * @return array [array, tree]
+     * @return TextSearchInterface
      */
-    // TODO search project for 'getPatternMatchers'
     public function getPatternSearchDS(string $defaultDS, bool $useDb = true): TextSearchInterface
     {
-        // convert class names and new 'hashtable' option to single format 
+        // convert class names and new 'hashtable' option to old format 
         $defaultDS = match ($defaultDS) {
             Trie::class => 'tree',
             HashTable::class, 'hashtable' => 'array',
@@ -120,11 +118,7 @@ class InputReader
             return $this->getPatternTree($useDb);
         } else {
             return $this->getPatternHashTable($useDb);
-            //$array = $this->getPatternArray($useDb);
-            //$tree = null;
         }
-        
-        //return [$array, $tree];
     }
     
     /**
@@ -157,7 +151,7 @@ class InputReader
 	 * @param string $filePath
 	 * @return array<WordInput>
 	 */
-	public function getWordList(string $filePath = self::WORDS_FILE): array
+	public function getWordList(string $filePath = self::WORDS_FILE): array // TODO remove
 	{
 		// TODO fix multibyte encoding when reading from file
 		

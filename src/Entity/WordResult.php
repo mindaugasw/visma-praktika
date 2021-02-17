@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-class WordResult extends WordInput
+class WordResult extends WordInput implements \JsonSerializable
 {
     /** @var int Id in DB */
     private int $id;
@@ -41,6 +41,11 @@ class WordResult extends WordInput
 	public function __toString()
     {
         return sprintf('%s -> %s', $this->input, $this->result);
+    }
+    
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
     }
     
     /**
@@ -188,5 +193,4 @@ class WordResult extends WordInput
 	{
 		return $this->result === $this->getExpectedResult();
 	}
-	
 }

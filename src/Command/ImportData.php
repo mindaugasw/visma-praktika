@@ -8,12 +8,11 @@ use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
 use App\Service\ArgsHandler;
-use App\Service\DBConnection;
+use App\Service\Hyphenator\Hyphenator;
 use App\Service\InputReader;
 use App\Service\Profiler;
 use App\Service\PsrLogger\Logger;
 use App\Service\PsrLogger\LoggerInterface;
-use App\Service\Hyphenator;
 use Exception;
 
 class ImportData implements CommandInterface

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\DB;
 
+use App\Service\Config;
 use App\Service\PsrLogger\LoggerInterface;
 use Exception;
-use mysql_xdevapi\Statement;
 use PDO;
 
 class DBConnection
@@ -106,7 +106,7 @@ class DBConnection
     
     public function getNextAutoIncrementId(string $tableName): int
     {
-        $sql = sprintf(
+        $sql = sprintf( // TODO replace with QueryBuilder
            'SELECT `AUTO_INCREMENT`
             FROM INFORMATION_SCHEMA.TABLES
             WHERE TABLE_SCHEMA = \'%s\'

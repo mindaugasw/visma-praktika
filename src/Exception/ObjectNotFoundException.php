@@ -4,7 +4,11 @@ namespace App\Exception;
 
 use Throwable;
 
-class NotImplementedException extends \Exception implements HttpResponseExceptionInterface
+/**
+ * Class, method, namespace or other object not found.
+ * @package App\Exception
+ */
+class ObjectNotFoundException extends \Exception implements HttpResponseExceptionInterface
 {
     private int $status;
     

@@ -4,11 +4,15 @@ namespace App\Exception;
 
 use Throwable;
 
-class NotImplementedException extends \Exception implements HttpResponseExceptionInterface
+/**
+ * Invalid or malformed request
+ * @package App\Exception
+ */
+class BadRequestException extends \Exception implements HttpResponseExceptionInterface
 {
     private int $status;
     
-    public function __construct($message = "", int $status = 500, $code = 0, Throwable $previous = null)
+    public function __construct($message = "", int $status = 400, $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
         $this->status = $status;

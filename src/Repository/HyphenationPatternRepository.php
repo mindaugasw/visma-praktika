@@ -3,7 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\HyphenationPattern;
-use App\Service\DBConnection;
+use App\Service\DB\DBConnection;
+use App\Service\DB\QueryBuilder;
 
 class HyphenationPatternRepository
 {
@@ -16,11 +17,45 @@ class HyphenationPatternRepository
         $this->db = $db;
     }
     
-    public function truncate(): void
+    /**
+     * @return array<HyphenationPattern>
+     */
+    public function getAll(): array
     {
-        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
-        if (!$this->db->query($truncateSql))
-            throw new \Exception();
+        $sql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->getQuery();
+        
+        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
+    }
+    
+    public function findOne(int $patternId): ?HyphenationPattern
+    {
+        $sql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->where('id=?')
+            ->getQuery();
+        
+        $results = $this->db->fetchClass($sql, [$patternId], HyphenationPattern::class);
+        
+        if (count($results) === 0) {
+            return null;
+        } else {
+            return $results[0];
+        }
+    }
+    
+    public function getPaginated(int $limit, int $offset): array
+    {
+        $sql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->limitOffset($limit, $offset)
+            ->getQuery();
+        
+        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
     }
     
     /**
@@ -30,15 +65,10 @@ class HyphenationPatternRepository
      */
     public function import(array $patterns): void
     {
-        $insertSql = sprintf('INSERT INTO `%s`(`pattern`, `patternNoDot`, `patternNoNumbers`, `patternText`, `patternType`) VALUES ', self::TABLE);
         $insertArgs = [];
         
         for ($i = 0, $len = count($patterns); $i < $len; $i++) {
             $p = $patterns[$i];
-            $insertSql .= '(?,?,?,?,?)';
-            
-            if ($i !== $len - 1)
-                $insertSql .= ',';
             
             array_push(
                 $insertArgs,
@@ -53,17 +83,25 @@ class HyphenationPatternRepository
                         HyphenationPattern::TYPE_REGULAR)
             );
         }
+    
+        $insertSql = (new QueryBuilder())
+            ->insertInto(self::TABLE, ['pattern', 'patternNoDot', 'patternNoNumbers', 'patternText', 'patternType'])
+            ->values('?,?,?,?,?', count($patterns))
+            ->getQuery();
         
         if (!$this->db->query($insertSql, $insertArgs))
             throw new \Exception('Error occurred during import');
     }
     
-    /**
-     * @return array<HyphenationPattern>
-     */
-    public function getAll(): array
+    public function truncate(): void
     {
-        $sql = sprintf('SELECT * FROM `%s`', self::TABLE);
-        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
+        $truncateSql = (new QueryBuilder())
+            ->delete() // can't TRUNCATE cause of FKs
+            ->from(self::TABLE)
+            ->getQuery();
+        
+        if (!$this->db->query($truncateSql))
+            throw new \Exception();
     }
+   
 }

@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\DataStructure\HashTable;
+use App\DataStructure\TextSearchInterface;
 use App\Entity\HyphenationPattern;
 use App\DataStructure\Trie\Trie;
 use App\Entity\WordInput;
@@ -19,8 +21,9 @@ class InputReader
     private LoggerInterface $logger;
     private HyphenationPatternRepository $patternRepo;
     
-    private ?array $patternList = null;
+    private ?HashTable $patternHashTable = null;
     private ?Trie $patternTree = null;
+    //private ?array $patternArrayNew = null; // TODO rename
     
     public function __construct(ArgsHandler $argsHandler, LoggerInterface $logger, HyphenationPatternRepository $patternRepo)
     {
@@ -35,13 +38,10 @@ class InputReader
      * @param string $filePath
      * @return array<HyphenationPattern>
      */
-	public function getPatternArray(bool $useDb = true, string $filePath = self::PATTERNS_FILE): array
-	{
-	    if ($this->patternList !== null)
-	        return $this->patternList;
-	    
-	    if ($useDb) {
-	        $this->patternList = $this->patternRepo->getAll();
+    public function getPatternArray(bool $useDb = true, string $filePath = self::PATTERNS_FILE): array
+    {
+        if ($useDb) {
+            return $this->patternRepo->getAll();
         } else {
             $patterns = [];
             $this->readPatternsFile(
@@ -51,10 +51,26 @@ class InputReader
                     $patterns[] = new HyphenationPattern($line);
                 }
             );
-        
-            $this->patternList = $patterns;
+            
+            return $patterns;
         }
-        return $this->patternList;
+    }
+    
+    /**
+     * Get patterns as searchable HashTable
+     * @param bool $useDb Whether to read patterns from DB or from file
+     * @param string $filePath
+     * @return HashTable HashTable initialized with patterns
+     */
+    public function getPatternHashTable(bool $useDb = true, string $filePath = self::PATTERNS_FILE): HashTable
+    {
+        if ($this->patternHashTable === null) {
+            $this->patternHashTable = HashTable::constructFromArray(
+                $this->getPatternArray($useDb, $filePath)
+            );
+        }
+    
+        return $this->patternHashTable;
     }
     
     /**
@@ -77,10 +93,6 @@ class InputReader
             $tree->addValue($p->getPatternNoNumbers(), $p);
         }
         
-        /*$this->readPatternsFile($filePath, function (string $line) use ($tree) {
-            $pattern = new HyphenationPattern($line);
-            $tree->addValue($pattern->getPatternNoNumbers(), $pattern);
-        });*/
         $this->logger->debug('Tree built in %f ms', [Profiler::stop("tree build")]);
         
         $this->patternTree = $tree;
@@ -88,24 +100,31 @@ class InputReader
     }
     
     /**
-     * Get patterns array and tree, out which one will always be null, which
-     * allows to pass both of them to the algorithm.
-     * Chooses method by provided argument or $defaultMethod.
-     * @param string $defaultMethod
+     * Get HashTable or Tree for pattern search.
+     * Data structure chosen based on CLI arg or $defaultMethod
+     * @param string $defaultDS class name of default data structure to choose
+     *                          if CLI arg isn't provided
      * @param bool $useDb If true, will read patterns from DB. If False, will read from default file.
      * @return array [array, tree]
      */
-    public function getPatternMatchers(string $defaultMethod, bool $useDb = true): array
+    // TODO search project for 'getPatternMatchers'
+    public function getPatternSearchDS(string $defaultDS, bool $useDb = true): TextSearchInterface
     {
-        if ($this->argsHandler->get('method', $defaultMethod) === 'tree') {
-            $array = null;
-            $tree = $this->getPatternTree($useDb);
+        // convert class names and new 'hashtable' option to single format 
+        $defaultDS = match ($defaultDS) {
+            Trie::class => 'tree',
+            HashTable::class, 'hashtable' => 'array',
+        };
+        
+        if ($this->argsHandler->get('method', $defaultDS) === 'tree') {
+            return $this->getPatternTree($useDb);
         } else {
-            $array = $this->getPatternArray($useDb);
-            $tree = null;
+            return $this->getPatternHashTable($useDb);
+            //$array = $this->getPatternArray($useDb);
+            //$tree = null;
         }
         
-        return [$array, $tree];
+        //return [$array, $tree];
     }
     
     /**
@@ -113,7 +132,7 @@ class InputReader
      */
     public function clearPatternsCache(): void
     {
-        $this->patternList = null;
+        $this->patternHashTable = null;
         $this->patternTree = null;
     }
     

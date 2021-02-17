@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-class HyphenationPattern
+class HyphenationPattern implements \JsonSerializable
 {
 	// Pattern types, depending on dot position in the pattern
 	public const TYPE_REGULAR = 0;
@@ -58,6 +58,10 @@ class HyphenationPattern
             return $this->pattern; 
     }
     
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
+    }
     
     /**
      * @return int
@@ -130,5 +134,4 @@ class HyphenationPattern
 	{
 		$this->position = $position;
 	}
-	
 }

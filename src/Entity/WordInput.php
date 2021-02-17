@@ -56,9 +56,9 @@ class WordInput
 	/**
 	 * Expected result with which actual result will be compared.
 	 * Can be null.
-	 * @return string|null
+	 * @return ?string
 	 */
-	public function getExpectedResult()
+	public function getExpectedResult(): ?string
 	{
 		return isset($this->expectedResult) ? $this->expectedResult : null;
 	}

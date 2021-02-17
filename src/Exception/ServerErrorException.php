@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use Throwable;
 
-class NotImplementedException extends \Exception implements HttpResponseExceptionInterface
+class ServerErrorException extends \Exception implements HttpResponseExceptionInterface
 {
     private int $status;
     

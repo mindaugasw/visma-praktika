@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\WordResult;
-use App\Service\DBConnection;
+use App\Exception\ServerErrorException;
+use App\Service\DB\DBConnection;
+use App\Service\DB\QueryBuilder;
 use App\Service\PsrLogger\LoggerInterface;
 use Exception;
 
@@ -23,26 +25,30 @@ class WordResultRepository
         $this->logger = $logger;
     }
     
-    public function findOne(string $inputWord, bool $joinPatterns = true): ?WordResult
+    public function findOneByInput(string $inputWord, bool $joinPatterns = true): ?WordResult
     {
-        $wordSql = sprintf('SELECT * FROM `%s` WHERE `input`=?', self::TABLE);
-        $resultsArray = $this->db->fetchClass($wordSql, [$inputWord], WordResult::class);
+        $wordSql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->where('input=?')
+            ->getQuery();
         
-        if (count($resultsArray) === 0)
-            return null;
-        $wordResult = $resultsArray[0];
+        return $this->findOne($wordSql, [$inputWord]);
+    }
+    
+    public function findOneById(int $id, bool $joinPatterns = true): ?WordResult
+    {
+        $wordSql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->where(sprintf('id=%d', $id))
+            ->getQuery();
         
-        if ($joinPatterns) {
-            $wordResult->setMatchedPatterns(
-                $this->wtpRepo->findByWord($wordResult->getId())
-            );
-        }
-        
-        return $wordResult;
+        return $this->findOne($wordSql, []);
     }
     
     /**
-     * Find a list of words in DB.
+     * Find a list of words in DB. Returns WordResult object only for found words
      * @param array<string> $words
      * @return array<WordResult> inputWordString => WordResult obj
      */
@@ -50,13 +56,16 @@ class WordResultRepository
     {
         if (count($words) === 0)
             throw new Exception();
-                       
-        $sql = sprintf(
-            'SELECT * FROM `%s` WHERE `input` IN (%s',
-            self::TABLE,
-            str_repeat('?,', count($words))
-        );
-        $sql = substr($sql, 0, -1).')'; // remove trailing comma and add closing )
+        
+        $inQuery = str_repeat('?,', count($words));
+        $inQuery = substr($inQuery, 0, -1).')'; // remove trailing comma and add closing )
+        
+        $sql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->where('input IN ('.$inQuery)
+            ->getQuery();
+        
         $wordResults = $this->db->fetchClass($sql, $words, WordResult::class);
         $assocResults = []; // assoc results array, inputWordString => WordResult obj
     
@@ -71,8 +80,6 @@ class WordResultRepository
      */
     public function insertMany(array $words): void
     {
-        $sqlHeader = sprintf('INSERT INTO `%s`(`id`, `input`, `result`) VALUES ', self::TABLE);
-        $wordsSql = $sqlHeader;
         $wordsArgs = [];
         $lastCommitIndex = 0;
         $autoIncrementId = $this->db->getNextAutoIncrementId(self::TABLE);
@@ -80,13 +87,15 @@ class WordResultRepository
         for ($i = 0; $i < count($words); $i++) {
     
             $words[$i]->setId($autoIncrementId + $i);
-            $wordsSql .= '(?, ?, ?),';
             array_push($wordsArgs, $words[$i]->getId(), $words[$i]->getInput(), $words[$i]->getResult());
             
-            if ($i === count($words) - 1 ||                         // always commit on last iteration
-                ($i % self::BATCH_IMPORT_SIZE === 0 && $i !== 0)) { // split big import into multiple statements and transactions
+            if ($i === count($words) - 1 ||                        // always commit on last iteration
+               ($i % self::BATCH_IMPORT_SIZE === 0 && $i !== 0)) { // split big import into multiple statements and transactions
     
-                $wordsSql = substr($wordsSql, 0, -1); // remove trailing comma
+                $wordsSql = (new QueryBuilder())
+                    ->insertInto(self::TABLE, ['id', 'input', 'result'])
+                    ->values('?, ?, ?', $i + 1 - $lastCommitIndex)
+                    ->getQuery();
                 
                 // build data for M:M table word_to_pattern
                 [$wtpSql, $wtpArgs] = $this->wtpRepo->buildImportQuery(array_slice($words, $lastCommitIndex, $i - $lastCommitIndex));
@@ -101,7 +110,6 @@ class WordResultRepository
                 
                 $this->logger->debug('Saved to DB %d/%d words', [$i + 1, count($words)]);
                 
-                $wordsSql = $sqlHeader;
                 $wordsArgs = [];
                 $lastCommitIndex = $i;
             }
@@ -110,8 +118,14 @@ class WordResultRepository
     
     public function insertOne(WordResult $wordResult): void
     {
-        $wordSql = sprintf('INSERT INTO `%s`(`input`, `result`) VALUES (?,?)', self::TABLE);
+        $wordResult->setId($this->db->getNextAutoIncrementId(self::TABLE));
+        $wordSql = (new QueryBuilder())
+            ->insertInto(self::TABLE, ['id', 'input', 'result'])
+            ->values('?, ?, ?', 1)
+            ->getQuery();
+        
         $wordArgs = [
+            $wordResult->getId(),
             $wordResult->getInput(),
             $wordResult->getResult()
         ];
@@ -121,15 +135,63 @@ class WordResultRepository
         $this->db->beginTransaction();
         $lastId = $this->db->insert($wordSql, $wordArgs);
         $patternsArgs[0] = $lastId;
-        if (!$this->db->query($patternsSql, $patternsArgs))
-            throw new Exception();
+        if ($patternsSql !== null) { // null - no matched patterns
+            if (!$this->db->query($patternsSql, $patternsArgs)) {
+                throw new Exception();
+            }
+        }
         $this->db->commitTransaction();
+    }
+    
+    public function delete(WordResult $wordResult): void
+    {
+        $sql = (new QueryBuilder())
+            ->delete()
+            ->from(self::TABLE)
+            ->where(sprintf('id=%d', $wordResult->getId()))
+            ->getQuery();
+        
+        $result = $this->db->query($sql);
+        
+        if ($result === false) {
+            throw new ServerErrorException('Could not delete item');
+        }
     }
     
     public function truncate(): void
     {
-        $truncateSql = sprintf('DELETE FROM `%s`', self::TABLE); // can't TRUNCATE cause of FK
+        $truncateSql = (new QueryBuilder())
+            ->delete() // can't TRUNCATE cause of FKs
+            ->from(self::TABLE)
+            ->getQuery();
+        
         if (!$this->db->query($truncateSql))
             throw new Exception();
+    }
+    
+    /**
+     * Execute give query for selecting one item and join it together with matched
+     * patterns
+     * @param string $sqlQuery SELECT query to execute
+     * @param array $sqlArgs args for $sqlQuery
+     * @param bool $joinPatterns if true, will embed HyphenationPattern objects
+     *                           into WordResult->matchedPatterns
+     * @return ?WordResult
+     */
+    private function findOne(string $sqlQuery, array $sqlArgs, bool $joinPatterns = true): ?WordResult
+    {
+        $resultsArray = $this->db->fetchClass($sqlQuery, $sqlArgs, WordResult::class);
+        
+        if (count($resultsArray) === 0)
+            return null;
+        $wordResult = $resultsArray[0];
+        
+        if ($joinPatterns) {
+            $wordResult->setMatchedPatterns(
+                $this->wtpRepo->findByWord($wordResult->getId())
+            );
+        }
+        
+        return $wordResult;
     }
 }

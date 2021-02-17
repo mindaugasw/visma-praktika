@@ -2,9 +2,7 @@
 
 namespace App\Service;
 
-use App\Command\ImportData;
-use App\Command\InteractiveInput;
-use App\Command\TextBlockInput;
+use App\Command\CommandManager;
 use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
@@ -14,7 +12,6 @@ use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\Hyphenator\Hyphenator;
 use App\Service\PsrLogger\Logger;
 use App\Service\Response\ResponseHandler;
-use Exception;
 
 class App
 {
@@ -33,6 +30,7 @@ class App
     public HyphenationHandler $hyphenationHandler;
     public Router $router;
     public ResponseHandler $responseHandler;
+    public CommandManager $commandManager;
     
     private bool $isCliEnv;
     
@@ -41,27 +39,11 @@ class App
         $this->isCliEnv = http_response_code() === false;
         
         $this->initializeServices();
-        
-        $this->argsHandler->addArgConfig('method', 'm', false, ['array', 'tree']);
     }
     
-    public function autoChooseCommand(): void
-    {
-        $this->argsHandler->addArgConfig('command', 'c', true);
-        $command = $this->argsHandler->get('command');
-        $command = sprintf('command%s', ucfirst(strtolower($command)));
-        
-        if (!is_callable([$this, $command]))
-            throw new Exception(sprintf('Command "%s" not found', $command));
-        
-        $this->$command();
-    }
-    
-    public function httpRoute(): void
-    {
-        $this->router->route();
-    }
-    
+    /**
+     * Create all services
+     */
     private function initializeServices(): void
     {
         $this->fileHandler = new FileHandler();
@@ -79,42 +61,7 @@ class App
         $this->hyphenationHandler = new HyphenationHandler($this->hyphenator, $this->wordRepo, $this->reader);
         $this->responseHandler = new ResponseHandler();
         $this->router = new Router($this, $this->responseHandler);
-    }
-    
-    public function commandInteractive(): void
-    {
-        (new InteractiveInput(
-            $this->reader,
-            $this->logger,
-            $this->argsHandler,
-            $this->hyphenator,
-            $this->writer,
-            $this->wordRepo
-        ))->process();
-    }
-    
-    public function commandText(): void
-    {
-        (new TextBlockInput(
-            $this->reader,
-            $this->argsHandler,
-            $this->hyphenator,
-            $this->fileHandler,
-            $this->wordRepo
-        ))->process();
-    }
-    
-    public function commandImport(): void
-    {
-        (new ImportData(
-            $this->argsHandler,
-            $this->reader,
-            $this->logger,
-            $this->hyphenator,
-            $this->patternRepo,
-            $this->wtpRepo,
-            $this->wordRepo
-        ))->process();
+        $this->commandManager = new CommandManager($this);
     }
     
     /**

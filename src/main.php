@@ -1,15 +1,19 @@
 <?php
 
-use App\Service\App;
+//use App\Service\App;
 
 require_once(__DIR__.'/../vendor/autoload.php');
 
-$app = new App();
+
+//$app = new App();
+
+$diContainer = new \App\DIContainer\Container();
+$app = $diContainer->get(\App\Service\App::class);
+die('asdf');
+
 
 if (http_response_code() === false) {
-    //$app->autoChooseCommand();
     $app->commandManager->autoExecuteCommand();
 } else {
-    //$app->httpRoute();
     $app->router->route();
 }

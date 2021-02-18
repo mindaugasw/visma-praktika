@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Exception\HttpResponseExceptionInterface;
 use App\Exception\ObjectNotFoundException;
 use App\Exception\ServerErrorException;
+use App\Service\DIContainer\Container;
 use App\Service\Response\JsonErrorResponse;
 use App\Service\Response\Response;
 use App\Service\Response\ResponseHandler;
@@ -14,12 +15,10 @@ class Router
     const CONTROLLER_BASE_PATH = '/Controller';
     const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
     
-    private App $app;
     private ResponseHandler $responseHandler;
     
-    public function __construct(App $app, ResponseHandler $responseHandler)
+    public function __construct(ResponseHandler $responseHandler)
     {
-        $this->app = $app;
         $this->responseHandler = $responseHandler;
     }
     
@@ -51,8 +50,8 @@ class Router
         
         try {
             // find class
-            [$controllerObj, $actionPath] = $this->findClass($actionPath);
-            $methodName = $this->findMethod($controllerObj, $actionPath);
+            [$controllerObj, $actionPath] = $this->getController($actionPath);
+            $methodName = $this->getMethod($controllerObj, $actionPath);
     
             parse_str($url['query'], $queryArgs);
             
@@ -73,8 +72,8 @@ class Router
     }
     
     /**
-     * Iterate through a given path and find valid class name.
-     * Return found class object and remaining path.
+     * Iterate through a given path and find valid controller class name.
+     * Return instance of found class and remaining path.
      *
      * e.g. with $actionPath = ['api', 'words']
      * the following classes will be attempted to load:
@@ -84,12 +83,12 @@ class Router
      * @param array $actionPath
      * @return array [ControllerObj, remaining $actionPath]
      */
-    private function findClass(array $actionPath): array
+    private function getController(array $actionPath): array
     {
         if (empty($actionPath)) { // default controller
             $className = self::DEFAULT_CONTROLLER_NAME;
             return [
-                new $className($this->app),
+                Container::getStatic($className),
                 $actionPath
             ];
         }
@@ -114,8 +113,10 @@ class Router
             if (file_exists($filePath)) {
                 $className = str_replace('/', '\\', $className); // convert file path to namespace
                 $className = 'App'.$className;
+                
                 return [
-                    new $className($this->app),
+                    //new $className($this->app),
+                    Container::getStatic($className),
                     array_slice($actionPath, $i + 1)
                 ];
             }
@@ -134,7 +135,7 @@ class Router
      * @param array $actionPath
      * @return string
      */
-    private function findMethod(object $controller, array $actionPath): string
+    private function getMethod(object $controller, array $actionPath): string
     {
         $methodNames = [];
         $requestMethod = strtolower($_SERVER['REQUEST_METHOD']);

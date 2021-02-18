@@ -5,19 +5,17 @@ namespace App\Controller\Api;
 use App\Controller\BaseController;
 use App\Exception\EntityNotFoundException;
 use App\Repository\WordResultRepository;
-use App\Service\App;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
-use App\Service\Response\ResponseHandler;
 
 class WordsController extends BaseController
 {
     private WordResultRepository $wordRepo;
     
-    public function __construct(App $app)
+    public function __construct(WordResultRepository $wordRepo)
     {
         parent::__construct();
-        $this->wordRepo = $app->wordRepo;
+        $this->wordRepo = $wordRepo;
     }
     
     /**

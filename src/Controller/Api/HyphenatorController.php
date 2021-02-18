@@ -3,7 +3,6 @@
 namespace App\Controller\Api;
 
 use App\Controller\BaseController;
-use App\Service\App;
 use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\Response\JsonErrorResponse;
 use App\Service\Response\JsonResponse;
@@ -11,12 +10,12 @@ use App\Service\Response\Response;
 
 class HyphenatorController extends BaseController
 {
-    private HyphenationHandler $hyphenator;
+    private HyphenationHandler $hyphenationHandler;
     
-    public function __construct(App $app)
+    public function __construct(HyphenationHandler $hyphenationHandler)
     {
         parent::__construct();
-        $this->hyphenator = $app->hyphenationHandler;
+        $this->hyphenationHandler = $hyphenationHandler;
     }
     
     /**
@@ -33,7 +32,7 @@ class HyphenatorController extends BaseController
             return new JsonErrorResponse(statusCode: 400);
         }
         
-        $wordResult = $this->hyphenator->processOneWord($word);
+        $wordResult = $this->hyphenationHandler->processOneWord($word);
         
         return new JsonResponse($wordResult);
     }
@@ -53,7 +52,7 @@ class HyphenatorController extends BaseController
         }
         
         $data = [
-            'text' => $this->hyphenator->processText($text) 
+            'text' => $this->hyphenationHandler->processText($text) 
         ];
         
         return new JsonResponse($data);

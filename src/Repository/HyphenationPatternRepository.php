@@ -60,7 +60,8 @@ class HyphenationPatternRepository
     
     /**
      * Truncate patterns table and import new ones
-     * @param array<HyphenationPattern> $patterns
+     *
+     * @param  array<HyphenationPattern> $patterns
      * @return void
      */
     public function import(array $patterns): void
@@ -89,8 +90,9 @@ class HyphenationPatternRepository
             ->values('?,?,?,?,?', count($patterns))
             ->getQuery();
         
-        if (!$this->db->query($insertSql, $insertArgs))
+        if (!$this->db->query($insertSql, $insertArgs)) {
             throw new \Exception('Error occurred during import');
+        }
     }
     
     public function truncate(): void
@@ -100,8 +102,9 @@ class HyphenationPatternRepository
             ->from(self::TABLE)
             ->getQuery();
         
-        if (!$this->db->query($truncateSql))
+        if (!$this->db->query($truncateSql)) {
             throw new \Exception();
+        }
     }
    
 }

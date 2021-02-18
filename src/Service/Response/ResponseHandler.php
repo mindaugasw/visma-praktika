@@ -10,6 +10,7 @@ class ResponseHandler
     
     /**
      * Send response to the client
+     *
      * @param Response $response
      */
     public function returnResponse(Response $response)

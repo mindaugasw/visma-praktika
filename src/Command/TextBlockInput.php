@@ -31,8 +31,7 @@ class TextBlockInput implements CommandInterface
         Hyphenator $hyphenator,
         FileHandler $fileHandler,
         WordResultRepository $wordRepo
-    )
-    {
+    ) {
         $this->reader = $reader;
         $this->argsHandler = $argsHandler;
         $this->hyphenator = $hyphenator;
@@ -52,12 +51,14 @@ class TextBlockInput implements CommandInterface
         } else if ($this->argsHandler->isSet(self::ARG_FILE_INPUT)) {
             $path = $this->argsHandler->get(self::ARG_FILE_INPUT);
     
-            if (!file_exists($path))
+            if (!file_exists($path)) {
                 throw new \Exception(sprintf('File does not exist: "%s"', $path));
+            }
             
             $inputStr = file_get_contents($path);
-        } else
+        } else {
             throw new \Exception('No input provided');
+        }
         
         $inputStr = strtolower($inputStr); // TODO fix algorithm to ignore casing
         $text = $this->processText($inputStr);
@@ -73,7 +74,11 @@ class TextBlockInput implements CommandInterface
         $wordMatches = $wordMatches[0]; // remove extra nesting
     
         // map to 1D array and remove match position data
-        $wordInputs = array_map(function ($match) { return $match[0]; }, $wordMatches);
+        $wordInputs = array_map(
+            function ($match) {
+                return $match[0]; 
+            }, $wordMatches
+        );
         $wordResults = $this->wordRepo->findMany($wordInputs);
         
         $originalTextLength = strlen($text);
@@ -98,8 +103,9 @@ class TextBlockInput implements CommandInterface
             );
         }
         
-        if (count($newWords) !== 0)
+        if (count($newWords) !== 0) {
             $this->wordRepo->insertMany($newWords);
+        }
         
         return $text;
     }

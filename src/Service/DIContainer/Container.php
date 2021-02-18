@@ -31,7 +31,8 @@ class Container implements ContainerInterface
     
     /**
      * Get instance of $id service
-     * @param string $id Full class name, including namespace, e.g. App\Service\Router
+     *
+     * @param  string $id Full class name, including namespace, e.g. App\Service\Router
      * @return object
      */
     public function get($id): object
@@ -45,7 +46,8 @@ class Container implements ContainerInterface
     
     /**
      * Static wrapper for instance method get()
-     * @param string $id
+     *
+     * @param  string $id
      * @return object
      */
     public static function getStatic(string $id): object
@@ -59,7 +61,8 @@ class Container implements ContainerInterface
     
     /**
      * Is service with given $id already instantiated?
-     * @param string $id
+     *
+     * @param  string $id
      * @return bool
      */
     public function has($id): bool
@@ -69,7 +72,8 @@ class Container implements ContainerInterface
     
     /**
      * Create new instance of service with given $id
-     * @param string $id 
+     *
+     * @param  string $id 
      * @return object New instance of service
      */
     private function createService(string $id): object
@@ -80,9 +84,11 @@ class Container implements ContainerInterface
         $class = new \ReflectionClass($id);
         $params = $class->getConstructor()?->getParameters() ?? [];
         
-        $paramServices = array_map(function (ReflectionParameter $param) {
-            return $this->get($param->getType()->getName());
-        }, $params);
+        $paramServices = array_map(
+            function (ReflectionParameter $param) {
+                return $this->get($param->getType()->getName());
+            }, $params
+        );
         
         return $class->newInstanceArgs($paramServices);
     }

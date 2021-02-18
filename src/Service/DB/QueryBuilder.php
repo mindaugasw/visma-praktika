@@ -17,7 +17,7 @@ class QueryBuilder
     }
     
     /**
-     * @param mixed ...$selectors e.g. 'id', 'name', 'surname'
+     * @param  mixed ...$selectors e.g. 'id', 'name', 'surname'
      * @return $this
      */
     public function select(...$selectors): static
@@ -28,7 +28,8 @@ class QueryBuilder
     
     /**
      * FROM statement for SELECT, DELETE queries
-     * @param string $table
+     *
+     * @param  string $table
      * @return $this
      */
     public function from(string $table): static
@@ -38,7 +39,7 @@ class QueryBuilder
     }
     
     /**
-     * @param string $where e.g. 'id=15', or 'input=?'
+     * @param  string $where e.g. 'id=15', or 'input=?'
      * @return $this
      */
     public function where(string $where): static
@@ -49,8 +50,9 @@ class QueryBuilder
     
     /**
      * INSERT query header
-     * @param string $table
-     * @param array $fields fields to set, e.g. ['id', 'username', 'birthdate'] 
+     *
+     * @param  string $table
+     * @param  array  $fields fields to set, e.g. ['id', 'username', 'birthdate'] 
      * @return $this
      */
     public function insertInto(string $table, array $fields): static
@@ -61,8 +63,9 @@ class QueryBuilder
     
     /**
      * Values set for INSERT query
-     * @param string $valueSet single value set, excluding brackets, e.g. 'val1, val2', or '?, ?'
-     * @param int $repeat number of times to repeat $valueSet
+     *
+     * @param  string $valueSet single value set, excluding brackets, e.g. 'val1, val2', or '?, ?'
+     * @param  int    $repeat   number of times to repeat $valueSet
      * @return $this
      */
     public function values(string $valueSet, int $repeat): static
@@ -107,17 +110,20 @@ class QueryBuilder
     /**
      * Add pagination params limit and offset. If either $limit or $offset ir FALSE,
      * that param will not included in query
-     * @param int|bool $limit
-     * @param int|bool $offset
+     *
+     * @param  int|bool $limit
+     * @param  int|bool $offset
      * @return $this
      */
     public function limitOffset(int|bool $limit, int|bool $offset): static
     {
-        if ($limit !== false)
+        if ($limit !== false) {
             $this->query .= sprintf(' LIMIT %d ', $limit);
+        }
         
-        if ($offset !== false)
+        if ($offset !== false) {
             $this->query .= sprintf(' OFFSET %d ', $offset);
+        }
         
         return $this;
     }
@@ -137,7 +143,8 @@ class QueryBuilder
     /**
      * Insert any custom text into the query. Can be used for any operations not 
      * supported by QueryBuilder
-     * @param string $query
+     *
+     * @param  string $query
      * @return $this
      */
     public function custom(string $query): static
@@ -148,6 +155,7 @@ class QueryBuilder
     
     /**
      * Get final query as string
+     *
      * @return string
      */
     public function getQuery(): string

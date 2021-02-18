@@ -5,22 +5,34 @@ use Exception;
 
 class Node
 {
-    /** @var array<Node> */
+    /**
+     * @var array<Node> 
+     */
     private array $children;
     
-    /** @var string Single character of this node, used for trie search */
+    /**
+     * @var string Single character of this node, used for trie search 
+     */
     private string $pathChar;
     
-    /** @var string Full path to find this node. Useful for debugging, not used in the algorithm */
+    /**
+     * @var string Full path to find this node. Useful for debugging, not used in the algorithm 
+     */
     private string $fullPath;
     
-    /** @var int Node depth. Root node has 0 depth, 0th char has 1 depth */
+    /**
+     * @var int Node depth. Root node has 0 depth, 0th char has 1 depth 
+     */
     private int $depth;
     
-    /** @var object value will be returned if this node is matched and is end node */
+    /**
+     * @var object value will be returned if this node is matched and is end node 
+     */
     private object $value;
     
-    /** @var bool Can this node be matched to return its $value? Note that end nodes can also contain children */
+    /**
+     * @var bool Can this node be matched to return its $value? Note that end nodes can also contain children 
+     */
     private bool $isEndNode;
     
     
@@ -36,6 +48,7 @@ class Node
     
     /**
      * Can be used to build text representation of the tree
+     *
      * @return string
      */
     public function __toString()
@@ -56,18 +69,21 @@ class Node
     
     /**
      * Check if there is a child node with given $pathChar
-     * @param string $pathChar
+     *
+     * @param  string $pathChar
      * @return Node|false Found node or false
      * @throws Exception
      */
     public function findDeeperNode(string $pathChar)
     {
-        if (empty($pathChar))
+        if (empty($pathChar)) {
             throw new Exception('Can\'t search for empty string');
+        }
         
         for ($i = 0, $length = count($this->children); $i < $length; $i++) {
-            if ($this->children[$i]->pathChar === $pathChar)
+            if ($this->children[$i]->pathChar === $pathChar) {
                 return $this->children[$i];
+            }
         }
         return false;
     }
@@ -116,8 +132,9 @@ class Node
      */
     public function getValue(): object
     {
-        if (!isset($this->value))
+        if (!isset($this->value)) {
             throw new Exception(sprintf('Tried getting unset value on node "%s"', $this->fullPath));
+        }
         
         return $this->value;
     }

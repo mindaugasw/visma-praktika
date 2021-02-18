@@ -53,13 +53,15 @@ class InteractiveInput implements CommandInterface
                     $word = $this->argsHandler->get(self::ARG_INPUT);
                     echo $word."\n";
                 }
-                else
+                else {
                     continue;
+                }
             } else {
                 $word = readline();
             }
-            if (empty($word))
+            if (empty($word)) {
                 continue;
+            }
             
             $word = strtolower($word); // TODO fix algorithm to ignore casing
             $this->processOneWord($word);

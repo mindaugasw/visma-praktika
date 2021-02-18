@@ -71,8 +71,9 @@ class Trie implements TextSearchInterface
                 $deeperNode = $node->findDeeperNode($char);
                 $node = $deeperNode;
                 
-                if ($deeperNode === false)
+                if ($deeperNode === false) {
                     break;
+                }
                 
                 if ($deeperNode->isEndNode()) {
                     $match = clone $deeperNode->getValue();
@@ -80,8 +81,9 @@ class Trie implements TextSearchInterface
                     $matches[] = $match;
                 }
                 
-                if (strlen($remainingInput) === 0)
+                if (strlen($remainingInput) === 0) {
                     break;
+                }
             }
         }
         
@@ -91,7 +93,8 @@ class Trie implements TextSearchInterface
     
     /**
      * Create an end node with given $value and all nodes to reach it
-     * @param string $key Search string, i.e. full path towards end node
+     *
+     * @param string $key   Search string, i.e. full path towards end node
      * @param object $value Value that will be returned when this pattern matches
      */
     public function addValue(string $key, mixed $value): void
@@ -105,8 +108,9 @@ class Trie implements TextSearchInterface
             if ($deeperNode !== false) { // continue search deeper
                 $node = $deeperNode;
     
-                if (strlen($remainingPath) === 0)
+                if (strlen($remainingPath) === 0) {
                     throw new \Exception(sprintf('Algorithm error while adding "%s" to the tree', $key));
+                }
     
                 [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
                 
@@ -151,7 +155,8 @@ class Trie implements TextSearchInterface
      *
      * ~10% #performance drop comparing with inline usage and code repeat of the
      * same 2 lines
-     * @param string $remainingPath
+     *
+     * @param  string $remainingPath
      * @return array<string> [$pathChar, $remainingPath]
      */
     private function advancePathStrings(string $remainingPath): array

@@ -21,7 +21,8 @@ class WordsController extends BaseController
     /**
      * Delete word from hyphenated words DB
      * Args: int $id
-     * @param array $args
+     *
+     * @param  array $args
      * @return Response
      */
     public function delete(array $args): Response

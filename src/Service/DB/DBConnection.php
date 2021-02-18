@@ -33,8 +33,7 @@ class DBConnection
      */
     private function connect(): PDO
     {
-        if (!isset($this->connection))
-        {
+        if (!isset($this->connection)) {
             $host = $this->config->get(self::CFG_DB_HOST);
             $db = $this->config->get(self::CFG_DB_NAME);
             $user = $this->config->get(self::CFG_DB_USERNAME);
@@ -53,6 +52,7 @@ class DBConnection
     
     /**
      * DB test method. Should return db version string
+     *
      * @return string
      */
     public function testDbConnection(): string
@@ -63,8 +63,9 @@ class DBConnection
     
     /**
      * Generic DB query, not returning results
-     * @param string $query
-     * @param array $params
+     *
+     * @param  string $query
+     * @param  array  $params
      * @return bool was the operation successful?
      */
     public function query(string $query, array $params = [])
@@ -75,9 +76,10 @@ class DBConnection
     
     /**
      * Fetch items and convert to given class objects
-     * @param string $query
-     * @param array $params
-     * @param string $className class to convert items to
+     *
+     * @param  string $query
+     * @param  array  $params
+     * @param  string $className class to convert items to
      * @return array
      */
     public function fetchClass(string $query, array $params, string $className): array
@@ -89,8 +91,9 @@ class DBConnection
     
     /**
      * Insert new item and return its id
-     * @param string $query
-     * @param array $params
+     *
+     * @param  string $query
+     * @param  array  $params
      * @return int Newly inserted item id
      */
     public function insert(string $query, array $params): int
@@ -98,8 +101,9 @@ class DBConnection
         $statement = $this->connection->prepare($query);
         $res = $statement->execute($params);
         
-        if ($res === false)
+        if ($res === false) {
             throw new Exception("Database error occurred");
+        }
         
         return $this->connection->lastInsertId();
     }
@@ -118,42 +122,50 @@ class DBConnection
         $sql = (new QueryBuilder())
             ->select('AUTO_INCREMENT')
             ->from('INFORMATION_SCHEMA.TABLES')
-            ->where(sprintf(
-                'TABLE_SCHEMA = \'%s\' AND TABLE_NAME = \'%s\'',
-                $this->config->get(self::CFG_DB_NAME),
-                $tableName))
+            ->where(
+                sprintf(
+                    'TABLE_SCHEMA = \'%s\' AND TABLE_NAME = \'%s\'',
+                    $this->config->get(self::CFG_DB_NAME),
+                    $tableName
+                )
+            )
             ->getQuery();
         
         $statement = $this->connection->prepare($sql);
-        if (!$statement->execute())
+        if (!$statement->execute()) {
             throw new Exception();
+        }
         $nextId = $statement->fetch(PDO::FETCH_NUM)[0];
-        if ($nextId === false)
+        if ($nextId === false) {
             throw new Exception();
+        }
         return $nextId;
     }
     
     public function beginTransaction()
     {
-        if ($this->connection->inTransaction())
+        if ($this->connection->inTransaction()) {
             $this->logger->warning('Attempted to begin new transaction while already in a transaction');
-        else if (!$this->connection->beginTransaction())
+        } else if (!$this->connection->beginTransaction()) {
             throw new Exception('Could not begin transaction');
+        }
     }
     
     public function commitTransaction()
     {
-        if (!$this->connection->inTransaction())
+        if (!$this->connection->inTransaction()) {
             $this->logger->warning('Attempted to commit transaction without starting it');
-        else if (!$this->connection->commit())
+        } else if (!$this->connection->commit()) {
             throw new Exception('Could not commit transaction');
+        }
     }
     
     public function rollbackTransaction()
     {
-        if (!$this->connection->inTransaction())
+        if (!$this->connection->inTransaction()) {
             throw new Exception('Attempted to rollback transaction without starting it');
-        else if (!$this->connection->rollBack())
+        } else if (!$this->connection->rollBack()) {
             throw new Exception('Could not rollback transaction');
+        }
     }
 }

@@ -11,15 +11,14 @@ use App\Service\ArgsHandler;
 use App\Service\Hyphenator\Hyphenator;
 use App\Service\InputReader;
 use App\Service\Profiler;
-use App\Service\PsrLogger\Logger;
-use App\Service\PsrLogger\LoggerInterface;
 use Exception;
+use Psr\Log\LoggerInterface;
 
 class ImportData implements CommandInterface
 {
     // CLI Args:
     /**
-     * --patterns, -p, optional. Patterns import options 
+     * --patterns, -p, optional. Patterns import options
      * Values:
      * - true - import default patterns file, (default)
      * - false - skip pattern import
@@ -81,13 +80,14 @@ class ImportData implements CommandInterface
         if ($argVal === 'false') {
             $this->logger->info('Skipping patterns import');
             return;
-        } else if ($argVal === 'true') {
+        } elseif ($argVal === 'true') {
             $this->logger->info('Importing default patterns file');
             $patterns = $this->reader->getPatternArray(false);
         } else {
             $this->logger->info('Importing custom patterns file');
-            if (!file_exists($argVal))
+            if (!file_exists($argVal)) {
                 throw new Exception(sprintf('File does not exist: "%s"', $argVal));
+            }
             $patterns = $this->reader->getPatternArray(false, $argVal);
         }
         
@@ -107,8 +107,9 @@ class ImportData implements CommandInterface
             $words = $this->reader->getWordList();
         } else {
             $this->logger->info('Importing custom words file');
-            if (!file_exists($argVal))
+            if (!file_exists($argVal)) {
                 throw new Exception(sprintf('File does not exist: "%s"', $argVal));
+            }
             $words = $this->reader->getWordList($argVal);
         }
         
@@ -121,7 +122,7 @@ class ImportData implements CommandInterface
     }
     
     /**
-     * @param array<WordInput> $words
+     * @param  array<WordInput> $words
      * @return array<WordResult>
      */
     private function hyphenateWords(array $words): array
@@ -138,7 +139,14 @@ class ImportData implements CommandInterface
         for ($i = 0; $i < count($words); $i++) {
             if ($i % self::WORDS_PER_BATCH === 0 && $i !== 0) {
                 $time = Profiler::stop('wordProcessing', 's');
-                $this->logger->debug('Done %d/%d, in %f s, %f ms / word', [$i, count($words), $time, $time / self::WORDS_PER_BATCH * 1000]);
+                $this->logger->debug(
+                    'Done %d/%d, in %f s, %f ms / word',
+                    [
+                        $i,
+                        count($words),
+                        $time, $time / self::WORDS_PER_BATCH * 1000
+                    ]
+                );
                 Profiler::start('wordProcessing');
             }
             

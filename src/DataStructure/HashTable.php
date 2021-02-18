@@ -6,7 +6,9 @@ use App\Entity\HyphenationPattern;
 
 class HashTable implements TextSearchInterface
 {
-    /** @var array Internal hash table */
+    /**
+     * @var array Internal hash table
+     */
     private array $hashTable;
     
     public function __construct()
@@ -19,7 +21,7 @@ class HashTable implements TextSearchInterface
         $newObj = new HashTable();
         
         foreach ($array as $element) {
-            $newObj->addValue($element->getPattern(), $element);            
+            $newObj->addValue($element->getPattern(), $element);
         }
         
         return $newObj;
@@ -43,7 +45,8 @@ class HashTable implements TextSearchInterface
         $matches = [];
         
         foreach ($this->hashTable as $key => $value) {
-            $strpos = strpos($text, $value->getPatternText()); // TODO currently can't find pattern more than once in one word
+            // TODO currently can't find pattern more than once in one word
+            $strpos = strpos($text, $value->getPatternText());
             
             if ($strpos !== false) {
                 $valueCopy = clone $value; // clone first to not write position info to object in the hash table
@@ -75,8 +78,9 @@ class HashTable implements TextSearchInterface
      *
      * TODO move to separate wrapper class specifically for HyphenationPatterns
      *      matching? To make this class more reusable
-     * @param string $text Text on which search was performed
-     * @param HyphenationPattern $pattern Found pattern, with set $position field
+     *
+     * @param  string             $text    Text on which search was performed
+     * @param  HyphenationPattern $pattern Found pattern, with set $position field
      * @return bool Is this match valid?
      */
     private function isMatchValid(string $text, HyphenationPattern $pattern): bool
@@ -87,8 +91,9 @@ class HashTable implements TextSearchInterface
         }
         
         // end pattern not at the end
-        if (($pattern->isEndPattern() && 
-            $pattern->getPosition() + strlen($pattern->getPatternText()) !== strlen($text))) {
+        if (($pattern->isEndPattern()
+            && $pattern->getPosition() + strlen($pattern->getPatternText()) !== strlen($text))
+        ) {
             return false;
         }
         

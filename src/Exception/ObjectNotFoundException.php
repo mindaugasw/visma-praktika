@@ -6,6 +6,7 @@ use Throwable;
 
 /**
  * Class, method, namespace or other object not found.
+ *
  * @package App\Exception
  */
 class ObjectNotFoundException extends \Exception implements HttpResponseExceptionInterface

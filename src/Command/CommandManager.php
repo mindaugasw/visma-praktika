@@ -29,8 +29,9 @@ class CommandManager
         $command = $this->app->argsHandler->get('command');
         $command = sprintf('command%s', ucfirst(strtolower($command)));
     
-        if (!is_callable([$this, $command]))
+        if (!is_callable([$this, $command])) {
             throw new Exception(sprintf('Command "%s" not found', $command));
+        }
     
         $this->$command();
     }

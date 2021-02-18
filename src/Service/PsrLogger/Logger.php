@@ -41,9 +41,9 @@ class Logger extends AbstractLogger
     /**
      * Logs with an arbitrary level.
      *
-     * @param mixed $level
-     * @param string $message log message. Can be vsprintf format string
-     * @param array $context Args for vsprintf
+     * @param  mixed  $level
+     * @param  string $message log message. Can be vsprintf format string
+     * @param  array  $context Args for vsprintf
      * @return void
      * @throws \InvalidArgumentException
      */

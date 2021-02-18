@@ -31,7 +31,8 @@ class WordToPatternRepository
     
     /**
      * Returns sql query and args array
-     * @param array<WordResult> $words
+     *
+     * @param  array<WordResult> $words
      * @return array [sqlQueryString, argsArray]
      */
     public function buildImportQuery(array $words): array
@@ -68,7 +69,9 @@ class WordToPatternRepository
                 sprintf(
                     '%s.pattern_id=%s.id',
                     self::TABLE,
-                    HyphenationPatternRepository::TABLE))
+                    HyphenationPatternRepository::TABLE
+                )
+            )
             ->where(self::TABLE.'.word_id=?')
             ->getQuery();
         

@@ -13,9 +13,10 @@ class Response
     
     /**
      * Response constructor.
+     *
      * @param string $data
-     * @param int $statusCode
-     * @param array $headers assoc array of headers. headerKey => headerValue
+     * @param int    $statusCode
+     * @param array  $headers    assoc array of headers. headerKey => headerValue
      */
     public function __construct(string $data, int $statusCode = 200, array $headers = [])
     {

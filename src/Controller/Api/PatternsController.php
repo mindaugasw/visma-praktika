@@ -21,7 +21,8 @@ class PatternsController extends BaseController
     /**
      * Get single pattern
      * Args: string $pattern
-     * @param array $args
+     *
+     * @param  array $args
      * @return Response
      */
     public function get(array $args): Response
@@ -40,7 +41,8 @@ class PatternsController extends BaseController
     /**
      * Get paginated list of patterns
      * Args: int $offset, int $limit
-     * @param array $args
+     *
+     * @param  array $args
      * @return Response
      */
     public function list_get(array $args): Response

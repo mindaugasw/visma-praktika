@@ -81,7 +81,8 @@ class HyphenationHandler
      * Separate block of text into words.
      * Returns array of regex matches (word and its position in text) in the
      * format: [[word, pos], ...]
-     * @param string $text
+     *
+     * @param  string $text
      * @return array<array<string, int>> Regex matches
      */
     private function separateTextIntoWords(string $text): array
@@ -96,14 +97,17 @@ class HyphenationHandler
     /**
      * 2nd algorithm step
      * Convert regex matches from 1st step to 1D words array for querying DB
-     * @param array<array<string, int>> $wordMatches Regex matches from 1st step
+     *
+     * @param  array<array<string, int>> $wordMatches Regex matches from 1st step
      * @return array<string> Array of words found in text block
      */
     private function convertMatchesTo1DArray(array $wordMatches): array
     {
-        return array_map(function ($match) {
-            return $match[0];
-        }, $wordMatches);
+        return array_map(
+            function ($match) {
+                return $match[0];
+            }, $wordMatches
+        );
     }
     
     /**
@@ -111,8 +115,9 @@ class HyphenationHandler
      * Select new words from this text block (those not found in DB).
      * Add keys for those words to $wordResults.
      * Make new array of only words - $newWords.
-     * @param array<string> $wordStrings All words in text block
-     * @param array<WordResult> $wordResults Words found in DB. Original array will be mutated (added keys for missing words)
+     *
+     * @param  array<string>     $wordStrings All words in text block
+     * @param  array<WordResult> $wordResults Words found in DB. Original array will be mutated (added keys for missing words)
      * @return array<string> Array of words existing in text but not in DB
      */
     private function filterOutNewWords(array $wordStrings, array &$wordResults): array
@@ -135,8 +140,9 @@ class HyphenationHandler
      * 4th algorithm step
      * Hyphenate all $newWords, insert them to $wordResults and return new array
      * of hyphenated new words WordResult objects, for insertion to DB
-     * @param array<string> $newWords New words, found in text but not in DB
-     * @param array<WordResult|string> $wordResults array from 3rd step, WordResults from DB joined with $newWords strings
+     *
+     * @param  array<string>            $newWords    New words, found in text but not in DB
+     * @param  array<WordResult|string> $wordResults array from 3rd step, WordResults from DB joined with $newWords strings
      * @return array<WordResult> Array of old and new words, all hyphenated, as WordResult
      */
     private function hyphenateNewWords(array $newWords, array &$wordResults): array
@@ -165,9 +171,10 @@ class HyphenationHandler
     /**
      * 5th algorithm step
      * Modify $text to replace all found words with their hyphenated versions
-     * @param string $text Original text block
-     * @param array<array<string, int>> $wordMatches Regex word matches array, from 1st step
-     * @param array<WordResult> $wordResults All words hyphenated, from 4th step
+     *
+     * @param  string                    $text        Original text block
+     * @param  array<array<string, int>> $wordMatches Regex word matches array, from 1st step
+     * @param  array<WordResult>         $wordResults All words hyphenated, from 4th step
      * @return string hyphenated text block
      */
     private function replaceTextWithHyphenatedWords(string $text, array $wordMatches, array $wordResults): string

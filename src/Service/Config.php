@@ -26,17 +26,18 @@ class Config
     /**
      * Get single config value by key
      *
-     * @param string $key
-     * @param string|null $default
+     * @param  string      $key
+     * @param  string|null $default
      * @return string
      */
     public function get(string $key, ?string $default = null): string
     {
         if (!array_key_exists($key, $this->configData)) {
-            if ($default !== null)
+            if ($default !== null) {
                 return $default;
-            else
+            } else {
                 throw new Exception(sprintf('Config key "%s"not found', $key));
+            }
         }
         
         return $this->configData[$key];
@@ -44,16 +45,18 @@ class Config
     
     /**
      * Read global and local config files and return config as assoc array
-     * @param string $globalPath
-     * @param string $localPath
+     *
+     * @param  string $globalPath
+     * @param  string $localPath
      * @return array<string>
      */
     private function readConfig(string $globalPath, string $localPath): array
     {
         $global = parse_ini_file($globalPath);
         $local = [];
-        if (file_exists($localPath))
+        if (file_exists($localPath)) {
             $local = parse_ini_file($localPath);
+        }
         
         return array_merge($global, $local);
     }

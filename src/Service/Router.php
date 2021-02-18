@@ -80,7 +80,7 @@ class Router
      * App\Controller\ApiController
      * App\Controller\Api\WordsController
      *
-     * @param array $actionPath
+     * @param  array $actionPath
      * @return array [ControllerObj, remaining $actionPath]
      */
     private function getController(array $actionPath): array
@@ -131,8 +131,8 @@ class Router
      * request method name, e.g. get()
      * index method, e.g. index_get()
      *
-     * @param object $controller
-     * @param array $actionPath
+     * @param  object $controller
+     * @param  array  $actionPath
      * @return string
      */
     private function getMethod(object $controller, array $actionPath): string

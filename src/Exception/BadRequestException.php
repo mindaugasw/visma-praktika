@@ -6,6 +6,7 @@ use Throwable;
 
 /**
  * Invalid or malformed request
+ *
  * @package App\Exception
  */
 class BadRequestException extends \Exception implements HttpResponseExceptionInterface

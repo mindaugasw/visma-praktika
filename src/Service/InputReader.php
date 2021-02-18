@@ -33,8 +33,9 @@ class InputReader
     
     /**
      * Get patterns as array
-     * @param bool $useDb Whether to read patterns from DB or from file
-     * @param string $filePath
+     *
+     * @param  bool   $useDb    Whether to read patterns from DB or from file
+     * @param  string $filePath
      * @return array<HyphenationPattern>
      */
     public function getPatternArray(bool $useDb = true, string $filePath = self::PATTERNS_FILE): array
@@ -45,8 +46,7 @@ class InputReader
             $patterns = [];
             $this->readPatternsFile(
                 $filePath,
-                function (string $line) use (&$patterns)
-                {
+                function (string $line) use (&$patterns) {
                     $patterns[] = new HyphenationPattern($line);
                 }
             );
@@ -57,8 +57,9 @@ class InputReader
     
     /**
      * Get patterns as searchable HashTable
-     * @param bool $useDb Whether to read patterns from DB or from file
-     * @param string $filePath
+     *
+     * @param  bool   $useDb    Whether to read patterns from DB or from file
+     * @param  string $filePath
      * @return HashTable HashTable initialized with patterns
      */
     public function getPatternHashTable(bool $useDb = true, string $filePath = self::PATTERNS_FILE): HashTable
@@ -74,14 +75,16 @@ class InputReader
     
     /**
      * Get patterns as tree
-     * @param bool $useDb
-     * @param string $filePath
+     *
+     * @param  bool   $useDb
+     * @param  string $filePath
      * @return Trie
      */
-	public function getPatternTree(bool $useDb = true, string $filePath = self::PATTERNS_FILE): Trie
+    public function getPatternTree(bool $useDb = true, string $filePath = self::PATTERNS_FILE): Trie
     {
-        if ($this->patternTree !== null)
+        if ($this->patternTree !== null) {
             return $this->patternTree;
+        }
     
         $array = $this->getPatternArray($useDb, $filePath);
         
@@ -101,9 +104,10 @@ class InputReader
     /**
      * Get HashTable or Tree for pattern search.
      * Data structure chosen based on CLI arg or $defaultMethod
-     * @param string $defaultDS class name of default data structure to choose
-     *                          if CLI arg isn't provided
-     * @param bool $useDb If true, will read patterns from DB. If False, will read from default file.
+     *
+     * @param  string $defaultDS class name of default data structure to choose
+     *                           if CLI arg isn't provided
+     * @param  bool   $useDb     If true, will read patterns from DB. If False, will read from default file.
      * @return TextSearchInterface
      */
     public function getPatternSearchDS(string $defaultDS, bool $useDb = true): TextSearchInterface
@@ -132,6 +136,7 @@ class InputReader
     
     /**
      * Read pattern file with callback for each pattern
+     *
      * @param string $path
      * @param $callback callable Will get called for each pattern, with pattern as the only argument
      */
@@ -146,26 +151,27 @@ class InputReader
         }
     }
     
-	/**
-	 * Get word list for batch processing
-	 * @param string $filePath
-	 * @return array<WordInput>
-	 */
-	public function getWordList(string $filePath = self::WORDS_FILE): array // TODO remove
-	{
-		// TODO fix multibyte encoding when reading from file
-		
-		$file = new SplFileObject($filePath, 'r');
-		$words = [];
-		
-		while (!$file->eof())
-		{
-			$line = trim($file->fgets());
-			$word = explode(',', $line);
-			$words[] = new WordInput($word[0], $word[1]);
-		}
-		
-		return $words;
-	}
+    /**
+     * Get word list for batch processing
+     *
+     * @param  string $filePath
+     * @return array<WordInput>
+     */
+    public function getWordList(string $filePath = self::WORDS_FILE): array // TODO remove
+    {
+        // TODO fix multibyte encoding when reading from file
+        
+        $file = new SplFileObject($filePath, 'r');
+        $words = [];
+        
+        while (!$file->eof())
+        {
+            $line = trim($file->fgets());
+            $word = explode(',', $line);
+            $words[] = new WordInput($word[0], $word[1]);
+        }
+        
+        return $words;
+    }
     
 }

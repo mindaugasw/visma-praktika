@@ -2,6 +2,7 @@
 
 namespace App\DIContainer;
 
+use App\DIContainer\Config\ServicesConfig;
 use App\DIContainer\Exception\ContainerException;
 use App\DIContainer\Exception\ParameterNotFoundException;
 use App\DIContainer\Exception\ServiceNotFoundException;
@@ -11,14 +12,23 @@ use Interop\Container\ContainerInterface as InteropContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class Container implements InteropContainerInterface
+/*class Container implements InteropContainerInterface
 {
-    private array $services;
-    private array $parameters;
-    private array $serviceStore;
+    private static array $services;
+    private static array $parameters;
+    private static array $serviceStore;
     
+    private static bool $initialized = false;
     
-    public function __construct(/*array $services = [], array $parameters = []*/)
+    private static function initializeContainer()
+    {
+        self::$services = ServicesConfig::getServicesConfig();
+        self::$parameters = [];
+    
+        self::$serviceStore = [];
+    }
+    
+    /*public function __construct(/*array $services = [], array $parameters = []*)
     {
         //$this->services = $services;
         //$this->parameters = $parameters;
@@ -28,11 +38,11 @@ class Container implements InteropContainerInterface
         
         $this->serviceStore = [];
         
-    }
-    
-    
-    public function get($id): object
+    }*
+    public static function get($id): object
     {
+        if ()
+        
         if (!$this->has($id)) {
             throw new ServiceNotFoundException(sprintf('Service "%s" not found', $id));
         }
@@ -127,4 +137,4 @@ class Container implements InteropContainerInterface
             call_user_func_array([$service, $callDefinition['method']], $arguments);
         }
     }
-}
+}*/

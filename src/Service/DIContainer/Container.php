@@ -1,17 +1,18 @@
 <?php declare(strict_types=1);
 
+namespace App\Service\DIContainer;
 
-namespace App\DIContainer;
-
-
+use App\Service\DIContainer\Config\ContainerConfig;
 use Psr\Container\ContainerInterface;
 use ReflectionParameter;
 
-class ContainerV2 implements ContainerInterface
+class Container implements ContainerInterface
 {
-    private static ContainerV2 $instance; // TODO remove
+    private static Container $instance; // TODO remove
     
     private array $services;
+    
+    private array $substitutionTypes; // always change $key type with $value type
     
     public function __construct()
     {
@@ -22,6 +23,10 @@ class ContainerV2 implements ContainerInterface
         }
     
         $this->services = [];
+        
+        $this->substitutionTypes = $this
+            ->get(ContainerConfig::class)
+            ->getTypeSubstitutionConfig();
     }
     
     /**
@@ -38,6 +43,11 @@ class ContainerV2 implements ContainerInterface
         return $this->services[$id];
     }
     
+    /**
+     * Static wrapper for instance method get()
+     * @param string $id
+     * @return object
+     */
     public static function getStatic(string $id): object
     {
         if (!isset(self::$instance)) {
@@ -64,8 +74,11 @@ class ContainerV2 implements ContainerInterface
      */
     private function createService(string $id): object
     {
+        // substitute type with another if it's defined in config
+        $id = $this->substitutionTypes[$id] ?? $id;
+        
         $class = new \ReflectionClass($id);
-        $params = $class->getConstructor()->getParameters();
+        $params = $class->getConstructor()?->getParameters() ?? [];
         
         $paramServices = array_map(function (ReflectionParameter $param) {
             return $this->get($param->getType()->getName());

@@ -3,22 +3,19 @@
 namespace App\Controller\Api;
 
 use App\Controller\BaseController;
-use App\Exception\NotImplementedException;
 use App\Repository\HyphenationPatternRepository;
-use App\Service\App;
 use App\Service\Response\JsonErrorResponse;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
-use App\Service\Response\ResponseHandler;
 
 class PatternsController extends BaseController
 {
     private HyphenationPatternRepository $patternRepo;
     
-    public function __construct(App $app)
+    public function __construct(HyphenationPatternRepository $patternRepo)
     {
         parent::__construct();
-        $this->patternRepo = $app->patternRepo;
+        $this->patternRepo = $patternRepo;
     }
     
     /**

@@ -2,40 +2,42 @@
 
 namespace App\Entity;
 
+use Exception;
+
 class WordResult extends WordInput implements \JsonSerializable
 {
     /**
-     * @var int Id in DB 
+     * @var int Id in DB
      */
     private int $id;
     
     /**
-     * @var string Final result - word divided into syllables, e.g. mis-trans-late 
+     * @var string Final result - word divided into syllables, e.g. mis-trans-late
      */
     private string $result;
     
     /**
-     * @var string Result with spaces, e.g. m i s-t r a n s-l a t e 
+     * @var string Result with spaces, e.g. m i s-t r a n s-l a t e
      */
     private string $resultWithSpaces;
     
     /**
-     * @var string Result with numbers, e.g. m2i s1t4r a2n2s3l2a4t e 
+     * @var string Result with numbers, e.g. m2i s1t4r a2n2s3l2a4t e
      */
     private string $resultWithNumbers;
     
     /**
-     * @var array<HyphenationPattern> All patterns found in this word 
+     * @var array<HyphenationPattern> All patterns found in this word
      */
     private array $matchedPatterns;
     
     /**
-     * @var array<array<int>> Numbers from patterns placed in their respective positions in the word 
+     * @var array<array<int>> Numbers from patterns placed in their respective positions in the word
      */
     private array $numberMatrix;
     
     /**
-     * @var float Processing time, ms 
+     * @var float Processing time, ms
      */
     private float $time;
     
@@ -80,7 +82,7 @@ class WordResult extends WordInput implements \JsonSerializable
     public function setId(int $id): void
     {
         if (isset($this->id)) {
-            throw new \Exception('Attempted to reset object id');
+            throw new Exception('Attempted to reset object id');
         }
         $this->id = $id;
     }

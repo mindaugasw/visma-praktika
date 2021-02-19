@@ -12,8 +12,8 @@ use App\Service\Response\ResponseHandler;
 
 class Router
 {
-    const CONTROLLER_BASE_PATH = '/Controller';
-    const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
+    private const CONTROLLER_BASE_PATH = '/Controller';
+    private const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
     
     private ResponseHandler $responseHandler;
     
@@ -60,7 +60,6 @@ class Router
             if (!is_a($response, Response::class)) {
                 throw new ServerErrorException('Controller must return Response object');
             }
-            
         } catch (HttpResponseExceptionInterface $exception) {
             $response = new JsonErrorResponse(
                 $exception->getMessage(),
@@ -112,7 +111,7 @@ class Router
             
             if (file_exists($filePath)) {
                 $className = str_replace('/', '\\', $className); // convert file path to namespace
-                $className = 'App'.$className;
+                $className = 'App' . $className;
                 
                 return [
                     //new $className($this->app),
@@ -143,7 +142,7 @@ class Router
             $methodNames[] = sprintf('%s_%s', $actionPath[0], $requestMethod); // myAction_get()
         } elseif (count($actionPath) === 0) {
             $methodNames[] = $requestMethod; // get()
-            $methodNames[] = 'index_'.$requestMethod; // index_get()
+            $methodNames[] = 'index_' . $requestMethod; // index_get()
         }
         
         foreach ($methodNames as $method) {

@@ -16,7 +16,7 @@ abstract class BaseController
     /**
      * Get arg by $key or $default value if it's not set.
      * If $isRequired=true and arg isn't set, will throw exception instead of
-     * return $default value  
+     * return $default value
      *
      * @param  array  $args
      * @param  string $key        arg to search for
@@ -24,7 +24,8 @@ abstract class BaseController
      * @param  bool   $isRequired if true, will throw exception if arg isn't found
      * @return mixed
      */
-    protected function getArgOrDefault(array $args,
+    protected function getArgOrDefault(
+        array $args,
         string $key,
         mixed $default = null,
         bool $isRequired = true

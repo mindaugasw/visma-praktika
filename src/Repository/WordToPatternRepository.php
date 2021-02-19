@@ -6,10 +6,11 @@ use App\Entity\HyphenationPattern;
 use App\Entity\WordResult;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
+use Exception;
 
 class WordToPatternRepository
 {
-    const TABLE = 'word_to_pattern';
+    public const TABLE = 'word_to_pattern';
     
     private DBConnection $db;
     
@@ -25,7 +26,7 @@ class WordToPatternRepository
             ->getQuery();
         
         if (!$this->db->query($truncateSql)) {
-            throw new \Exception('Error occurred during import');
+            throw new Exception('Error occurred during import');
         }
     }
     
@@ -62,7 +63,7 @@ class WordToPatternRepository
     public function findByWord(int $wordId): array
     {
         $sql = (new QueryBuilder())
-            ->select(self::TABLE.'.position', HyphenationPatternRepository::TABLE.'.*')
+            ->select(self::TABLE . '.position', HyphenationPatternRepository::TABLE . '.*')
             ->from(self::TABLE)
             ->joinOn(
                 HyphenationPatternRepository::TABLE,
@@ -72,7 +73,7 @@ class WordToPatternRepository
                     HyphenationPatternRepository::TABLE
                 )
             )
-            ->where(self::TABLE.'.word_id=?')
+            ->where(self::TABLE . '.word_id=?')
             ->getQuery();
         
         return $this->db->fetchClass($sql, [$wordId], HyphenationPattern::class);

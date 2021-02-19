@@ -4,7 +4,7 @@ use App\Command\CommandManager;
 use App\Service\DIContainer\Container;
 use App\Service\Router;
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $diContainer = new Container();
 

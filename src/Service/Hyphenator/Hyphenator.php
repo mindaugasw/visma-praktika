@@ -15,7 +15,8 @@ class Hyphenator
      * Syllabize one word
      *
      * @param  WordInput           $inputObj   Word to syllabize
-     * @param  TextSearchInterface $textSearch Data structure for handling text search. Should be already initialized with all patterns
+     * @param  TextSearchInterface $textSearch Data structure for handling text search.
+     *                                         Should be already initialized with all patterns
      * @return WordResult
      */
     public function wordToSyllables(WordInput $inputObj, TextSearchInterface $textSearch): WordResult
@@ -60,11 +61,11 @@ class Hyphenator
         $numberMatches = $numberMatches[0]; // remove extra nesting
         
         // add numbers to correct places in the row
-        for ($j = 0; $j < count($numberMatches); $j++)
-        {
+        for ($j = 0; $j < count($numberMatches); $j++) {
             // TODO skip last index number? Would prevent hyphen-at-word-end bugs (e.g. dark-, in-)
             $matrixRow
-            [$pattern->getPosition() + $numberMatches[$j][1] - 1 - $j] // number position in word // -$j to offset positions taken by other numbers in this pattern
+            // find number position in word // -$j to offset positions taken by other numbers in this pattern
+            [$pattern->getPosition() + $numberMatches[$j][1] - 1 - $j]
             = $numberMatches[$j][0];
         }
         
@@ -111,14 +112,12 @@ class Hyphenator
     {
         $combined = "";
         
-        for ($i = 0; $i < strlen($word); $i++)
-        {
+        for ($i = 0; $i < strlen($word); $i++) {
             $combined .= substr($word, $i, 1);
             
             // find max number
             $maxNumber = -1;
-            for ($j = 0; $j < count($numberMatrix); $j++)
-            {
+            for ($j = 0; $j < count($numberMatrix); $j++) {
                 if ($numberMatrix[$j][$i] > $maxNumber) {
                     $maxNumber = $numberMatrix[$j][$i];
                 }
@@ -136,5 +135,4 @@ class Hyphenator
         
         return $combined;
     }
-    
 }

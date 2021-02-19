@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use Exception;
+use SplFileObject;
+
 class FileHandler
 {
     /**
@@ -9,16 +12,16 @@ class FileHandler
      *
      * @param  string $filePath
      * @param  string $mode     File open mode
-     * @return \SplFileObject
+     * @return SplFileObject
      */
-    public function openWithMkdir(string $filePath, string $mode): \SplFileObject
+    public function openWithMkdir(string $filePath, string $mode): SplFileObject
     {
         $dirname = dirname($filePath);
         
         if (!file_exists($dirname) && !mkdir($dirname, 0777, true)) {
-            throw new \Exception(sprintf('Could not create log file directory "%s"', $dirname));
+            throw new Exception(sprintf('Could not create log file directory "%s"', $dirname));
         }
      
-        return new \SplFileObject($filePath, $mode);
+        return new SplFileObject($filePath, $mode);
     }
 }

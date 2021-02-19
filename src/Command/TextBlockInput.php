@@ -48,7 +48,7 @@ class TextBlockInput implements CommandInterface
         $inputStr = '';
         if ($this->argsHandler->isSet(self::ARG_CLI_INPUT)) {
             $inputStr = $this->argsHandler->get(self::ARG_CLI_INPUT);
-        } else if ($this->argsHandler->isSet(self::ARG_FILE_INPUT)) {
+        } elseif ($this->argsHandler->isSet(self::ARG_FILE_INPUT)) {
             $path = $this->argsHandler->get(self::ARG_FILE_INPUT);
     
             if (!file_exists($path)) {
@@ -76,8 +76,9 @@ class TextBlockInput implements CommandInterface
         // map to 1D array and remove match position data
         $wordInputs = array_map(
             function ($match) {
-                return $match[0]; 
-            }, $wordMatches
+                return $match[0];
+            },
+            $wordMatches
         );
         $wordResults = $this->wordRepo->findMany($wordInputs);
         
@@ -85,7 +86,6 @@ class TextBlockInput implements CommandInterface
         $newWords = []; // words found in $text but not in DB
         
         foreach ($wordMatches as $match) {
-            
             // replace words found in DB
             if (array_key_exists($match[0], $wordResults)) {// match[0] - word input string
                 $wordResult = $wordResults[$match[0]];
@@ -119,7 +119,7 @@ class TextBlockInput implements CommandInterface
             $file->fwrite($text);
             echo sprintf("Output saved to \"%s\"\n", $path);
         } else {
-            echo $text."\n";
+            echo $text . "\n";
         }
     }
 }

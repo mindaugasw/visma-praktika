@@ -4,18 +4,17 @@ namespace App\Service;
 
 use App\DataStructure\HashTable;
 use App\DataStructure\TextSearchInterface;
-use App\Entity\HyphenationPattern;
 use App\DataStructure\Trie\Trie;
+use App\Entity\HyphenationPattern;
 use App\Entity\WordInput;
 use App\Repository\HyphenationPatternRepository;
-use Exception;
 use Psr\Log\LoggerInterface;
 use SplFileObject;
 
 class InputReader
 {
-    const PATTERNS_FILE = __DIR__.'/../../data/text-hyphenation-patterns.txt';
-    const WORDS_FILE = __DIR__.'/../../data/test-dictionary-140k.txt';
+    private const PATTERNS_FILE = __DIR__.'/../../data/text-hyphenation-patterns.txt';
+    private const WORDS_FILE = __DIR__.'/../../data/test-dictionary-140k.txt';
     
     private ArgsHandler $argsHandler;
     private LoggerInterface $logger;
@@ -24,8 +23,11 @@ class InputReader
     private ?HashTable $patternHashTable = null;
     private ?Trie $patternTree = null;
     
-    public function __construct(ArgsHandler $argsHandler, LoggerInterface $logger, HyphenationPatternRepository $patternRepo)
-    {
+    public function __construct(
+        ArgsHandler $argsHandler,
+        LoggerInterface $logger,
+        HyphenationPatternRepository $patternRepo
+    ) {
         $this->argsHandler = $argsHandler;
         $this->logger = $logger;
         $this->patternRepo = $patternRepo;
@@ -34,8 +36,8 @@ class InputReader
     /**
      * Get patterns as array
      *
-     * @param  bool   $useDb    Whether to read patterns from DB or from file
-     * @param  string $filePath
+     * @param bool $useDb Whether to read patterns from DB or from file
+     * @param string $filePath
      * @return array<HyphenationPattern>
      */
     public function getPatternArray(bool $useDb = true, string $filePath = self::PATTERNS_FILE): array
@@ -58,8 +60,8 @@ class InputReader
     /**
      * Get patterns as searchable HashTable
      *
-     * @param  bool   $useDb    Whether to read patterns from DB or from file
-     * @param  string $filePath
+     * @param bool $useDb Whether to read patterns from DB or from file
+     * @param string $filePath
      * @return HashTable HashTable initialized with patterns
      */
     public function getPatternHashTable(bool $useDb = true, string $filePath = self::PATTERNS_FILE): HashTable
@@ -69,15 +71,15 @@ class InputReader
                 $this->getPatternArray($useDb, $filePath)
             );
         }
-    
+        
         return $this->patternHashTable;
     }
     
     /**
      * Get patterns as tree
      *
-     * @param  bool   $useDb
-     * @param  string $filePath
+     * @param bool $useDb
+     * @param string $filePath
      * @return Trie
      */
     public function getPatternTree(bool $useDb = true, string $filePath = self::PATTERNS_FILE): Trie
@@ -85,12 +87,12 @@ class InputReader
         if ($this->patternTree !== null) {
             return $this->patternTree;
         }
-    
+        
         $array = $this->getPatternArray($useDb, $filePath);
         
         Profiler::start("tree build");
         $tree = new Trie();
-    
+        
         foreach ($array as $p) {
             $tree->addValue($p->getPatternNoNumbers(), $p);
         }
@@ -105,14 +107,14 @@ class InputReader
      * Get HashTable or Tree for pattern search.
      * Data structure chosen based on CLI arg or $defaultMethod
      *
-     * @param  string $defaultDS class name of default data structure to choose
+     * @param string $defaultDS class name of default data structure to choose
      *                           if CLI arg isn't provided
-     * @param  bool   $useDb     If true, will read patterns from DB. If False, will read from default file.
+     * @param bool $useDb If true, will read patterns from DB. If False, will read from default file.
      * @return TextSearchInterface
      */
     public function getPatternSearchDS(string $defaultDS, bool $useDb = true): TextSearchInterface
     {
-        // convert class names and new 'hashtable' option to old format 
+        // convert class names and new 'hashtable' option to old format
         $defaultDS = match ($defaultDS) {
             Trie::class => 'tree',
             HashTable::class, 'hashtable' => 'array',
@@ -143,9 +145,8 @@ class InputReader
     private function readPatternsFile(string $path, callable $callback): void
     {
         $file = new SplFileObject($path);
-    
-        while (!$file->eof())
-        {
+        
+        while (!$file->eof()) {
             $line = trim($file->fgets());
             $callback($line);
         }
@@ -154,7 +155,7 @@ class InputReader
     /**
      * Get word list for batch processing
      *
-     * @param  string $filePath
+     * @param string $filePath
      * @return array<WordInput>
      */
     public function getWordList(string $filePath = self::WORDS_FILE): array // TODO remove
@@ -164,8 +165,7 @@ class InputReader
         $file = new SplFileObject($filePath, 'r');
         $words = [];
         
-        while (!$file->eof())
-        {
+        while (!$file->eof()) {
             $line = trim($file->fgets());
             $word = explode(',', $line);
             $words[] = new WordInput($word[0], $word[1]);
@@ -173,5 +173,4 @@ class InputReader
         
         return $words;
     }
-    
 }

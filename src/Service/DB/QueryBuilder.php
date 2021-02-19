@@ -52,7 +52,7 @@ class QueryBuilder
      * INSERT query header
      *
      * @param  string $table
-     * @param  array  $fields fields to set, e.g. ['id', 'username', 'birthdate'] 
+     * @param  array  $fields fields to set, e.g. ['id', 'username', 'birthdate']
      * @return $this
      */
     public function insertInto(string $table, array $fields): static
@@ -73,11 +73,7 @@ class QueryBuilder
         $valueSet = sprintf('(%s), ', $valueSet);
         $valueSet = str_repeat($valueSet, $repeat);
         $valueSet = substr($valueSet, 0, -2); // remove trailing comma and space
-        $this->query.= sprintf(' VALUES %s ', $valueSet);
-        
-        
-        //$format = sprintf(' VALUES %%%d$s', $repeat); // make %s with repeat, e.g. %5$s // TODO replace with str_repeat 
-        //$this->query .= sprintf($format, $valueSet); // TODO add (), 
+        $this->query .= sprintf(' VALUES %s ', $valueSet);
         return $this;
     }
     
@@ -141,7 +137,7 @@ class QueryBuilder
     }
     
     /**
-     * Insert any custom text into the query. Can be used for any operations not 
+     * Insert any custom text into the query. Can be used for any operations not
      * supported by QueryBuilder
      *
      * @param  string $query

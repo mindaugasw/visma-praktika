@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Service\Hyphenator;
-
 
 use App\DataStructure\HashTable;
 use App\DataStructure\Trie\Trie;
@@ -16,7 +14,7 @@ class HyphenationHandler
     /**
      * preg_match_all to get array of words from text block
      */
-    const REGEX_WORD_SEPARATOR = '/\b[a-zA-Z\-\'’]{2,}\b/';
+    private const REGEX_WORD_SEPARATOR = '/\b[a-zA-Z\-\'’]{2,}\b/';
     
     private Hyphenator $hyphenator;
     private WordResultRepository $wordRepo;
@@ -106,7 +104,8 @@ class HyphenationHandler
         return array_map(
             function ($match) {
                 return $match[0];
-            }, $wordMatches
+            },
+            $wordMatches
         );
     }
     
@@ -117,7 +116,8 @@ class HyphenationHandler
      * Make new array of only words - $newWords.
      *
      * @param  array<string>     $wordStrings All words in text block
-     * @param  array<WordResult> $wordResults Words found in DB. Original array will be mutated (added keys for missing words)
+     * @param  array<WordResult> $wordResults Words found in DB. Original array
+     * will be mutated (added keys for missing words)
      * @return array<string> Array of words existing in text but not in DB
      */
     private function filterOutNewWords(array $wordStrings, array &$wordResults): array
@@ -142,7 +142,8 @@ class HyphenationHandler
      * of hyphenated new words WordResult objects, for insertion to DB
      *
      * @param  array<string>            $newWords    New words, found in text but not in DB
-     * @param  array<WordResult|string> $wordResults array from 3rd step, WordResults from DB joined with $newWords strings
+     * @param  array<WordResult|string> $wordResults array from 3rd step, WordResults
+     * from DB joined with $newWords strings
      * @return array<WordResult> Array of old and new words, all hyphenated, as WordResult
      */
     private function hyphenateNewWords(array $newWords, array &$wordResults): array

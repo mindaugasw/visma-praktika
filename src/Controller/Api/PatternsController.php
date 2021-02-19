@@ -35,7 +35,7 @@ class PatternsController extends BaseController
             return new JsonErrorResponse(statusCode: 404);
         }
         
-        return new JsonResponse($pattern);        
+        return new JsonResponse($pattern);
     }
     
     /**

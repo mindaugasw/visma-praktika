@@ -2,7 +2,21 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" packagePrefix="App" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" packagePrefix="App\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Command" isTestSource="false" packagePrefix="App\Command\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Controller" isTestSource="false" packagePrefix="App\Controller\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Controller/Api" isTestSource="false" packagePrefix="App\Controller\Api\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/DataStructure" isTestSource="false" packagePrefix="App\DataStructure\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/DataStructure/Trie" isTestSource="false" packagePrefix="App\DataStructure\Trie\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Entity" isTestSource="false" packagePrefix="App\Entity\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Exception" isTestSource="false" packagePrefix="App\Exception\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Repository" isTestSource="false" packagePrefix="App\Repository\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Service" isTestSource="false" packagePrefix="App\Service\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Service/DB" isTestSource="false" packagePrefix="App\Service\DB\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Service/Hyphenator" isTestSource="false" packagePrefix="App\Service\Hyphenator\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Service/PsrLogger" isTestSource="false" packagePrefix="App\Service\PsrLogger\" />
+      <sourceFolder url="file://$MODULE_DIR$/src/Service/Response" isTestSource="false" packagePrefix="App\Service\Response\" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/container" />
     </content>
     <orderEntry type="inheritedJdk" />

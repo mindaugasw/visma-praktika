@@ -1,4 +1,5 @@
 <?php
+
 namespace App\DataStructure\Trie;
 
 use App\DataStructure\TextSearchInterface;
@@ -30,7 +31,7 @@ class Trie implements TextSearchInterface
     }
     
     /**
-     * @inheritDoc 
+     * @inheritDoc
      */
     public static function constructFromDictionary(array $dictionary): static
     {
@@ -48,7 +49,7 @@ class Trie implements TextSearchInterface
         return $this->rootNode->__toString();
     }
     
-    /** 
+    /**
      * @inheritDoc
      */
     public function findMatches(string $text): array
@@ -113,9 +114,7 @@ class Trie implements TextSearchInterface
                 }
     
                 [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);
-                
             } else { // create new node and continue search in it (if not end node)
-                
                 $newNode = new Node($pathChar, substr($key, 0, $node->getDepth() + 1));
                 $node->addChild($newNode);
                 $node = $newNode;
@@ -166,5 +165,4 @@ class Trie implements TextSearchInterface
             substr($remainingPath, 1),      // next $remainingPath
         ];
     }
-    
 }

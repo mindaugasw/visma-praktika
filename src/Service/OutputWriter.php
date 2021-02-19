@@ -20,14 +20,12 @@ class OutputWriter
      */
     public function printFullWordResult(WordResult $res): void
     {
-        echo $res->getInputWithSpaces()."\n";
+        echo $res->getInputWithSpaces() . "\n";
         
-        for ($i = 0; $i < count($res->getNumberMatrix()); $i++)
-        {
+        for ($i = 0; $i < count($res->getNumberMatrix()); $i++) {
             $numbersRow = ''; // build string of a single row from numberMatrix
-            for ($j = 0; $j < strlen($res->getInput()); $j++)
-            {
-                $numbersRow .= " ".($res->getNumberMatrix()[$i][$j] === -1 ? " " : $res->getNumberMatrix()[$i][$j]);
+            for ($j = 0; $j < strlen($res->getInput()); $j++) {
+                $numbersRow .= " " . ($res->getNumberMatrix()[$i][$j] === -1 ? " " : $res->getNumberMatrix()[$i][$j]);
             }
             echo sprintf("%s %s\n", $numbersRow, $res->getMatchedPatterns()[$i]->getPattern());
         }

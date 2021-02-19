@@ -125,7 +125,8 @@ class Profiler
         echo sprintf(
             "Combined time @ %s: %f %s\n",
             $key,
-            self::pausedGet($key, $units), $units
+            self::pausedGet($key, $units),
+            $units
         );
     }
     
@@ -134,9 +135,9 @@ class Profiler
     {
         if ($units === "ns") {
             return 1;
-        } else if ($units === "ms") {
+        } elseif ($units === "ms") {
             return self::TIME_DIVISOR_MS;
-        } else if ($units === "s") {
+        } elseif ($units === "s") {
             return self::TIME_DIVISOR_S;
         } else {
             throw new Exception("Unknown units \"$units\"");
@@ -145,7 +146,9 @@ class Profiler
     
     private static function generateRandomString($length = 10): string
     {
-        return substr(str_shuffle(str_repeat($x='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length/strlen($x)))), 1, $length);
+        return substr(str_shuffle(str_repeat(
+            $x = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            ceil($length / strlen($x))
+        )), 1, $length);
     }
-    
 }

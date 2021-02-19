@@ -10,11 +10,11 @@ use Psr\Log\AbstractLogger;
 class Logger extends AbstractLogger
 {
     // Supported config
-    const CFG_LEVEL_CONSOLE = ['key' => 'log_level_console', 'default' => LogLevel::INFO];
-    const CFG_LEVEL_FILE = ['key' => 'log_level_file', 'default' => LogLevel::ALERT];
-    const CFG_LOG_FILE = ['key' => 'log_file', 'default' => '/var/log/log.txt'];
+    private const CFG_LEVEL_CONSOLE = ['key' => 'log_level_console', 'default' => LogLevel::INFO];
+    private const CFG_LEVEL_FILE = ['key' => 'log_level_file', 'default' => LogLevel::ALERT];
+    private const CFG_LOG_FILE = ['key' => 'log_file', 'default' => '/var/log/log.txt'];
     
-    const DATETIME_FORMAT = 'Y-m-d H:i:s';
+    private const DATETIME_FORMAT = 'Y-m-d H:i:s';
     
     private App $app;
     private Config $config;
@@ -51,7 +51,7 @@ class Logger extends AbstractLogger
     {
         // log to console
         if ($this->app->isCliEnv() && LogLevel::shouldLog($level, $this->consoleLevel)) {
-            echo vsprintf($message."\n", $context);
+            echo vsprintf($message . "\n", $context);
         }
         
         // log to file

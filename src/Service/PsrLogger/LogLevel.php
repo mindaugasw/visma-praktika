@@ -8,38 +8,38 @@ namespace App\Service\PsrLogger;
 class LogLevel extends \Psr\Log\LogLevel
 {
     /**
- * @var string System is unusable 
-*/
-    const EMERGENCY = 'emergency';
+     * @var string System is unusable
+     */
+    public const EMERGENCY = 'emergency';
     /**
- * @var string Action must be taken immediately 
-*/
-    const ALERT     = 'alert';
+     * @var string Action must be taken immediately
+     */
+    public const ALERT = 'alert';
     /**
- * @var string Critical conditions 
-*/
-    const CRITICAL  = 'critical';
+     * @var string Critical conditions
+     */
+    public const CRITICAL = 'critical';
     /**
- * @var string Runtime errors that do not require immediate action but should typically
-     * be logged and monitored 
-*/
-    const ERROR     = 'error';
+     * @var string Runtime errors that do not require immediate action but should typically
+     * be logged and monitored
+     */
+    public const ERROR = 'error';
     /**
- * @var string Exceptional occurrences that are not errors 
-*/
-    const WARNING   = 'warning';
+     * @var string Exceptional occurrences that are not errors
+     */
+    public const WARNING = 'warning';
     /**
- * @var string Normal but significant events 
-*/
-    const NOTICE    = 'notice';
+     * @var string Normal but significant events
+     */
+    public const NOTICE = 'notice';
     /**
- * @var string Interesting events 
-*/
-    const INFO      = 'info';
+     * @var string Interesting events
+     */
+    public const INFO = 'info';
     /**
- * @var string Detailed debug information 
-*/
-    const DEBUG     = 'debug';
+     * @var string Detailed debug information
+     */
+    public const DEBUG = 'debug';
     
     private static array $values = [
         self::EMERGENCY => 0,
@@ -53,10 +53,10 @@ class LogLevel extends \Psr\Log\LogLevel
     ];
     
     /**
-     * Should this message be logged, based on message level and current app logging level 
+     * Should this message be logged, based on message level and current app logging level
      *
-     * @param  string $messageLevel
-     * @param  string $currentLevel
+     * @param string $messageLevel
+     * @param string $currentLevel
      * @return bool
      */
     public static function shouldLog(string $messageLevel, string $currentLevel): bool

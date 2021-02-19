@@ -109,7 +109,7 @@ class ArgsHandler
                     throw new Exception('getopt is bugged again');
                 }
                 $value = $argsInput[$long];
-            } else if (isset($argsInput[$short])) {
+            } elseif (isset($argsInput[$short])) {
                 if (is_array($argsInput[$short])) {
                     throw new Exception('getopt is bugged again');
                 }
@@ -117,13 +117,14 @@ class ArgsHandler
             }
     
             // unset and but required
-            if ($value === null && $singleConf['required'] === true) { 
+            if ($value === null && $singleConf['required'] === true) {
                 throw new Exception(sprintf('Required parameter "%s" is not set', $long));
             }
     
             // value invalid
-            if ($value !== null  
-                && !empty($singleConf['values']) 
+            if (
+                $value !== null
+                && !empty($singleConf['values'])
                 && !in_array($value, $singleConf['values'])
             ) {
                 throw new Exception(sprintf('Argument "%s" value "%s" is not allowed', $long, $value));

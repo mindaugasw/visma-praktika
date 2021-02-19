@@ -46,14 +46,13 @@ class InteractiveInput implements CommandInterface
         while (true) {
             echo 'Enter a word: ';
             $word = '';
-            if (!$initialWordDone) { 
+            if (!$initialWordDone) {
                 $initialWordDone = true;
                 
                 if ($this->argsHandler->isSet(self::ARG_INPUT)) {
                     $word = $this->argsHandler->get(self::ARG_INPUT);
-                    echo $word."\n";
-                }
-                else {
+                    echo $word . "\n";
+                } else {
                     continue;
                 }
             } else {

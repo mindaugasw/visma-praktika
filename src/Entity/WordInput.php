@@ -5,17 +5,17 @@ namespace App\Entity;
 class WordInput
 {
     /**
-     * @var string Original word input, e.g. mistranslate 
+     * @var string Original word input, e.g. mistranslate
      */
     protected string $input;
     
     /**
-     * @var string Original word with spaces, e.g. m i s t r a n s l a t e 
+     * @var string Original word with spaces, e.g. m i s t r a n s l a t e
      */
     protected string $inputWithSpaces;
     
     /**
-     * @var string Original word with leading and trailing dots, e.g. .mistranslate. 
+     * @var string Original word with leading and trailing dots, e.g. .mistranslate.
      */
     protected string $inputWithDots;
     
@@ -73,5 +73,4 @@ class WordInput
     {
         return isset($this->expectedResult) ? $this->expectedResult : null;
     }
-    
 }

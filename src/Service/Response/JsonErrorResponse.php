@@ -4,7 +4,7 @@ namespace App\Service\Response;
 
 class JsonErrorResponse extends JsonResponse
 {
-    const ERROR_MESSAGES = [
+    private const ERROR_MESSAGES = [
         0 => 'Error occurred when processing request',
         400 => 'Bad request',
         404 => 'Item not found',

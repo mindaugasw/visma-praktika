@@ -10,7 +10,7 @@ class HyphenationPattern implements \JsonSerializable
     public const TYPE_END = 2;
     
     /**
-     * @var int Id in DB 
+     * @var int Id in DB
      */
     private int $id;
     
@@ -20,32 +20,32 @@ class HyphenationPattern implements \JsonSerializable
     private string $pattern;
     
     /**
-     * @var string Pattern without start or end dots, e.g. mis1 
+     * @var string Pattern without start or end dots, e.g. mis1
      */
     private string $patternNoDot;
     
     /**
-     * @var string Pattern without any numbers, e.g. .mis 
+     * @var string Pattern without any numbers, e.g. .mis
      */
     private string $patternNoNumbers;
     
     /**
-     * @var string Only pattern text, e.g. mis 
+     * @var string Only pattern text, e.g. mis
      */
     private string $patternText;
     
     /**
-     * @var int TYPE_REGULAR|TYPE_START|TYPE_END 
+     * @var int TYPE_REGULAR|TYPE_START|TYPE_END
      */
     private int $patternType;
     
     /**
-     * @var int Position in word at which this pattern starts 
+     * @var int Position in word at which this pattern starts
      */
     private int $position;
     
     /**
-     * @param ?string $pattern If null, no properties will be set. Meant for initialization with PDO 
+     * @param ?string $pattern If null, no properties will be set. Meant for initialization with PDO
      */
     public function __construct(?string $pattern = null)
     {
@@ -57,7 +57,7 @@ class HyphenationPattern implements \JsonSerializable
     
             if (substr($pattern, 0, 1) === '.') {
                 $this->patternType = self::TYPE_START;
-            } else if (substr($pattern, -1) === '.') {
+            } elseif (substr($pattern, -1) === '.') {
                 $this->patternType = self::TYPE_END;
             } else {
                 $this->patternType = self::TYPE_REGULAR;
@@ -71,7 +71,7 @@ class HyphenationPattern implements \JsonSerializable
             return sprintf('%s @ %d', $this->pattern, $this->position);
         } else {
             return $this->pattern;
-        } 
+        }
     }
     
     public function jsonSerialize()

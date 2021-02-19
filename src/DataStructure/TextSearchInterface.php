@@ -40,5 +40,4 @@ interface TextSearchInterface
      * @return array<HyphenationPattern> Array of matched patterns
      */
     public function findMatches(string $text): mixed;
-    
 }

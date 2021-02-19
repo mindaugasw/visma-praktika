@@ -54,7 +54,7 @@ class HyphenatorController extends BaseController
         }
         
         $data = [
-            'text' => $this->hyphenationHandler->processText($text) 
+            'text' => $this->hyphenationHandler->processText($text)
         ];
         
         return new JsonResponse($data);

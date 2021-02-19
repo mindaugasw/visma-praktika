@@ -10,10 +10,10 @@ use Psr\Log\LoggerInterface;
 class DBConnection
 {
     // Config keys
-    const CFG_DB_HOST = "db_host";
-    const CFG_DB_NAME = "db_name";
-    const CFG_DB_USERNAME = "db_username";
-    const CFG_DB_PASSWORD = "db_password";
+    private const CFG_DB_HOST = "db_host";
+    private const CFG_DB_NAME = "db_name";
+    private const CFG_DB_USERNAME = "db_username";
+    private const CFG_DB_PASSWORD = "db_password";
     
     private Config $config;
     
@@ -146,7 +146,7 @@ class DBConnection
     {
         if ($this->connection->inTransaction()) {
             $this->logger->warning('Attempted to begin new transaction while already in a transaction');
-        } else if (!$this->connection->beginTransaction()) {
+        } elseif (!$this->connection->beginTransaction()) {
             throw new Exception('Could not begin transaction');
         }
     }
@@ -155,7 +155,7 @@ class DBConnection
     {
         if (!$this->connection->inTransaction()) {
             $this->logger->warning('Attempted to commit transaction without starting it');
-        } else if (!$this->connection->commit()) {
+        } elseif (!$this->connection->commit()) {
             throw new Exception('Could not commit transaction');
         }
     }
@@ -164,7 +164,7 @@ class DBConnection
     {
         if (!$this->connection->inTransaction()) {
             throw new Exception('Attempted to rollback transaction without starting it');
-        } else if (!$this->connection->rollBack()) {
+        } elseif (!$this->connection->rollBack()) {
             throw new Exception('Could not rollback transaction');
         }
     }

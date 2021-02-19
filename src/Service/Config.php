@@ -13,8 +13,8 @@ use Exception;
  */
 class Config
 {
-    const FILE_GLOBAL = __DIR__.'/../../config.ini';
-    const FILE_LOCAL = __DIR__.'/../../config.local.ini';
+    private const FILE_GLOBAL = __DIR__ . '/../../config.ini';
+    private const FILE_LOCAL = __DIR__ . '/../../config.local.ini';
     
     private array $configData;
     

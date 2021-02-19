@@ -5,10 +5,11 @@ namespace App\Repository;
 use App\Entity\HyphenationPattern;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
+use Exception;
 
 class HyphenationPatternRepository
 {
-    const TABLE = 'hyphenation_pattern';
+    public const TABLE = 'hyphenation_pattern';
     
     private DBConnection $db;
     
@@ -78,9 +79,9 @@ class HyphenationPatternRepository
                 $p->getPatternNoNumbers(),
                 $p->getPatternText(),
                 $p->isStartPattern() ?
-                    HyphenationPattern::TYPE_START : 
-                    ($p->isEndPattern() ? 
-                        HyphenationPattern::TYPE_END : 
+                    HyphenationPattern::TYPE_START :
+                    ($p->isEndPattern() ?
+                        HyphenationPattern::TYPE_END :
                         HyphenationPattern::TYPE_REGULAR)
             );
         }
@@ -91,7 +92,7 @@ class HyphenationPatternRepository
             ->getQuery();
         
         if (!$this->db->query($insertSql, $insertArgs)) {
-            throw new \Exception('Error occurred during import');
+            throw new Exception('Error occurred during import');
         }
     }
     
@@ -103,8 +104,7 @@ class HyphenationPatternRepository
             ->getQuery();
         
         if (!$this->db->query($truncateSql)) {
-            throw new \Exception();
+            throw new Exception();
         }
     }
-   
 }

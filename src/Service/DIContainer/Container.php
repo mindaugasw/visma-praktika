@@ -1,9 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Service\DIContainer;
 
 use App\Service\DIContainer\Config\ContainerConfig;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
 use ReflectionParameter;
 
 class Container implements ContainerInterface
@@ -73,7 +76,7 @@ class Container implements ContainerInterface
     /**
      * Create new instance of service with given $id
      *
-     * @param  string $id 
+     * @param  string $id
      * @return object New instance of service
      */
     private function createService(string $id): object
@@ -81,13 +84,14 @@ class Container implements ContainerInterface
         // substitute type with another if it's defined in config
         $id = $this->substitutionTypes[$id] ?? $id;
         
-        $class = new \ReflectionClass($id);
+        $class = new ReflectionClass($id);
         $params = $class->getConstructor()?->getParameters() ?? [];
         
         $paramServices = array_map(
             function (ReflectionParameter $param) {
                 return $this->get($param->getType()->getName());
-            }, $params
+            },
+            $params
         );
         
         return $class->newInstanceArgs($paramServices);

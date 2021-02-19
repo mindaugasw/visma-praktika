@@ -11,8 +11,9 @@ use Psr\Log\LoggerInterface;
 
 class WordResultRepository
 {
-    const BATCH_IMPORT_SIZE = 3500;
-    const TABLE = 'word';
+    public const TABLE = 'word';
+    
+    private const BATCH_IMPORT_SIZE = 3500;
     
     private DBConnection $db;
     private WordToPatternRepository $wtpRepo;
@@ -60,12 +61,12 @@ class WordResultRepository
         }
         
         $inQuery = str_repeat('?,', count($words));
-        $inQuery = substr($inQuery, 0, -1).')'; // remove trailing comma and add closing )
+        $inQuery = substr($inQuery, 0, -1) . ')'; // remove trailing comma and add closing )
         
         $sql = (new QueryBuilder())
             ->select('*')
             ->from(self::TABLE)
-            ->where('input IN ('.$inQuery)
+            ->where('input IN (' . $inQuery)
             ->getQuery();
         
         $wordResults = $this->db->fetchClass($sql, $words, WordResult::class);
@@ -88,21 +89,23 @@ class WordResultRepository
         $autoIncrementId = $this->db->getNextAutoIncrementId(self::TABLE);
         
         for ($i = 0; $i < count($words); $i++) {
-    
             $words[$i]->setId($autoIncrementId + $i);
             array_push($wordsArgs, $words[$i]->getId(), $words[$i]->getInput(), $words[$i]->getResult());
             
             if ($i === count($words) - 1                         // always commit on last iteration
                 || ($i % self::BATCH_IMPORT_SIZE === 0 && $i !== 0)
             ) { // split big import into multiple statements and transactions
-    
                 $wordsSql = (new QueryBuilder())
                     ->insertInto(self::TABLE, ['id', 'input', 'result'])
                     ->values('?, ?, ?', $i + 1 - $lastCommitIndex)
                     ->getQuery();
                 
                 // build data for M:M table word_to_pattern
-                [$wtpSql, $wtpArgs] = $this->wtpRepo->buildImportQuery(array_slice($words, $lastCommitIndex, $i - $lastCommitIndex));
+                [$wtpSql, $wtpArgs] = $this->wtpRepo->buildImportQuery(array_slice(
+                    $words,
+                    $lastCommitIndex,
+                    $i - $lastCommitIndex
+                ));
                 
                 $this->db->beginTransaction();
                 if (!$this->db->query($wordsSql, $wordsArgs)) { // insert words batch

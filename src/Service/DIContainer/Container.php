@@ -19,13 +19,14 @@ class Container implements ContainerInterface
     
     public function __construct()
     {
-        if (isset(self::$instance)) {
+        if (isset(self::$instance)) { // TODO remove
             throw new \Exception();
         } else {
             self::$instance = $this;
         }
     
         $this->services = [];
+        $this->services[self::class] = $this;
         
         $this->substitutionTypes = $this
             ->get(ContainerConfig::class)

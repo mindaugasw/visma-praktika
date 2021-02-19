@@ -26,7 +26,7 @@ class Hyphenator
         
         // find all patterns
         $result->setMatchedPatterns(
-            $textSearch->findMatches($inputObj->getInput())
+            $textSearch->findMatches($inputObj)
         );
         
         // add to number matrix

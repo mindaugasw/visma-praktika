@@ -3,6 +3,7 @@
 namespace App\DataStructure\Trie;
 
 use App\DataStructure\TextSearchInterface;
+use App\Entity\WordInput;
 
 // What is Trie: https://uploads.toptal.io/blog/image/106/toptal-blog-3_F.png
 class Trie implements TextSearchInterface
@@ -52,8 +53,9 @@ class Trie implements TextSearchInterface
     /**
      * @inheritDoc
      */
-    public function findMatches(string $text): array
+    public function findMatches(WordInput $wordInput): array
     {
+        $text = $wordInput->getInputWithDots();
         $matches = []; // stores $value from matched endNodes
         $nodesSearched = 0;
         
@@ -78,7 +80,14 @@ class Trie implements TextSearchInterface
                 
                 if ($deeperNode->isEndNode()) {
                     $match = clone $deeperNode->getValue();
-                    $match->setPosition(max($i - 1, 0)); // -1 to compensate for added dot at word start
+                    
+                    if ($match->isStartPattern()) {
+                        $match->setPosition($i);
+                    } else {
+                        // -1 to compensate for added dot at word start
+                        $match->setPosition($i - 1);
+                    }
+                    //$match->setPosition(max($i - 1, 0));
                     $matches[] = $match;
                 }
                 

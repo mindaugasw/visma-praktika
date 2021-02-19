@@ -3,6 +3,7 @@
 namespace App\DataStructure;
 
 use App\Entity\HyphenationPattern;
+use App\Entity\WordInput;
 
 class HashTable implements TextSearchInterface
 {
@@ -40,8 +41,9 @@ class HashTable implements TextSearchInterface
     /**
      * @inheritDoc
      */
-    public function findMatches(string $text): array
+    public function findMatches(WordInput $wordInput): array
     {
+        $text = $wordInput->getInput();
         $matches = [];
         
         foreach ($this->hashTable as $key => $value) {

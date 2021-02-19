@@ -60,6 +60,7 @@ class WordResultRepository
             throw new Exception();
         }
         
+        // TODO add this functionality to QueryBuilder
         $inQuery = str_repeat('?,', count($words));
         $inQuery = substr($inQuery, 0, -1) . ')'; // remove trailing comma and add closing )
         
@@ -89,22 +90,24 @@ class WordResultRepository
         $autoIncrementId = $this->db->getNextAutoIncrementId(self::TABLE);
         
         for ($i = 0; $i < count($words); $i++) {
+            // TODO refactor this mess
             $words[$i]->setId($autoIncrementId + $i);
             array_push($wordsArgs, $words[$i]->getId(), $words[$i]->getInput(), $words[$i]->getResult());
-            
-            if ($i === count($words) - 1                         // always commit on last iteration
+    
+            // split big import into multiple statements and transactions
+            if ($i === count($words) - 1                             // always commit on last iteration
                 || ($i % self::BATCH_IMPORT_SIZE === 0 && $i !== 0)
-            ) { // split big import into multiple statements and transactions
+            ) {
                 $wordsSql = (new QueryBuilder())
                     ->insertInto(self::TABLE, ['id', 'input', 'result'])
-                    ->values('?, ?, ?', $i + 1 - $lastCommitIndex)
+                    ->values('?, ?, ?', $i - $lastCommitIndex + 1)
                     ->getQuery();
                 
                 // build data for M:M table word_to_pattern
                 [$wtpSql, $wtpArgs] = $this->wtpRepo->buildImportQuery(array_slice(
                     $words,
-                    $lastCommitIndex,
-                    $i - $lastCommitIndex
+                    max($lastCommitIndex - 1, 0),
+                    max($i - $lastCommitIndex, 1)
                 ));
                 
                 $this->db->beginTransaction();
@@ -120,7 +123,7 @@ class WordResultRepository
                 $this->logger->debug('Saved to DB %d/%d words', [$i + 1, count($words)]);
                 
                 $wordsArgs = [];
-                $lastCommitIndex = $i;
+                $lastCommitIndex = $i + 1;
             }
         }
     }

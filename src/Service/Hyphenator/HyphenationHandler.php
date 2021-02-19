@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Service\Hyphenator;
 
@@ -9,6 +9,11 @@ use App\Entity\WordResult;
 use App\Repository\WordResultRepository;
 use App\Service\InputReader;
 
+/**
+ * Provides methods for word hyphenation, automatically choosing patterns source
+ * (DB or file) and saving new words to DB
+ * @package App\Service\Hyphenator
+ */
 class HyphenationHandler
 {
     /**
@@ -27,6 +32,14 @@ class HyphenationHandler
         $this->reader = $reader;
     }
     
+    /**
+     * Hyphenate a single word
+     * Search in DB first and if not found then load hyphenation data, hyphenate
+     * the word, and save it to DB
+     * @param string $input
+     * @param string $defaultSearchDS
+     * @return WordResult
+     */
     public function processOneWord(string $input): WordResult
     {
         // find in db
@@ -42,6 +55,11 @@ class HyphenationHandler
         }
     }
     
+    /**
+     * Hyphenate a block of text
+     * @param string $text
+     * @return string
+     */
     public function processText(string $text): string
     {
         $text = strtolower($text); // TODO change algorithm to ignore letter case
@@ -49,7 +67,7 @@ class HyphenationHandler
         // separate text into words
         $wordMatches = $this->separateTextIntoWords($text);
         
-        // map to 1D array and remove match position data for DB querying
+        // map to 1D array and prepare for DB querying (remove match position data, duplicate values)
         $wordStrings = $this->convertMatchesTo1DArray($wordMatches);
         
         // query DB
@@ -94,19 +112,24 @@ class HyphenationHandler
     
     /**
      * 2nd algorithm step
-     * Convert regex matches from 1st step to 1D words array for querying DB
+     * Convert regex matches from 1st step to 1D words array for querying DB.
+     * Filters array to contain only unique items.
      *
      * @param  array<array<string, int>> $wordMatches Regex matches from 1st step
      * @return array<string> Array of words found in text block
      */
     private function convertMatchesTo1DArray(array $wordMatches): array
     {
-        return array_map(
+        $wordStrings = array_map(
             function ($match) {
                 return $match[0];
             },
             $wordMatches
         );
+        
+        // array_values to reindex array, as array_unique doesn't do that
+        $wordStrings = array_values(array_unique($wordStrings));
+        return $wordStrings;
     }
     
     /**

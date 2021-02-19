@@ -3,6 +3,7 @@
 namespace App\DataStructure;
 
 use App\Entity\HyphenationPattern;
+use App\Entity\WordInput;
 
 /**
  * Interface for data structures that provide text search
@@ -36,8 +37,8 @@ interface TextSearchInterface
     /**
      * Get array of all matches for given text
      *
-     * @param  string $text Text in which to search
+     * @param  WordInput $wordInput Word in which to search
      * @return array<HyphenationPattern> Array of matched patterns
      */
-    public function findMatches(string $text): mixed;
+    public function findMatches(WordInput $wordInput): mixed;
 }

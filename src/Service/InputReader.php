@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Service;
 
@@ -13,8 +13,9 @@ use SplFileObject;
 
 class InputReader
 {
-    private const PATTERNS_FILE = __DIR__.'/../../data/text-hyphenation-patterns.txt';
-    private const WORDS_FILE = __DIR__.'/../../data/test-dictionary-140k.txt';
+    // Default files
+    private const PATTERNS_FILE = __DIR__.'/../../data/patterns.txt';
+    private const WORDS_FILE = __DIR__.'/../../data/words-140k.txt';
     
     private ArgsHandler $argsHandler;
     private LoggerInterface $logger;

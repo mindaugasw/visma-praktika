@@ -2,9 +2,11 @@
 
 namespace App\Command;
 
+use App\DataStructure\HashTable;
 use App\Entity\WordInput;
 use App\Repository\WordResultRepository;
 use App\Service\ArgsHandler;
+use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\InputReader;
 use App\Service\OutputWriter;
 use App\Service\Hyphenator\Hyphenator;
@@ -12,13 +14,17 @@ use Psr\Log\LoggerInterface;
 
 class InteractiveInput implements CommandInterface
 {
-     // CLI args:
-    const ARG_INPUT = 'input'; // -i, optional. Initial input. After processing it, will continue in interactive mode
+    // CLI arg keys:
+    /**
+     * --input, -i, optional. Initial word input. After processing it, will
+     * continue in interactive mode
+     */
+    private const ARG_INPUT = 'input';
         
     private InputReader $reader;
     private LoggerInterface $logger;
     private ArgsHandler $argsHandler;
-    private Hyphenator $hyphenator;
+    private HyphenationHandler $hyphenator;
     private OutputWriter $writer;
     private WordResultRepository $wordRepo;
     
@@ -26,7 +32,7 @@ class InteractiveInput implements CommandInterface
         InputReader $reader,
         LoggerInterface $logger,
         ArgsHandler $argsHandler,
-        Hyphenator $hyphenator,
+        HyphenationHandler $hyphenator,
         OutputWriter $writer,
         WordResultRepository $wordRepo
     ) {
@@ -45,7 +51,7 @@ class InteractiveInput implements CommandInterface
         
         while (true) {
             echo 'Enter a word: ';
-            $word = '';
+            
             if (!$initialWordDone) {
                 $initialWordDone = true;
                 
@@ -69,15 +75,15 @@ class InteractiveInput implements CommandInterface
     
     private function processOneWord(string $input): void
     {
-        $wordResult = $this->wordRepo->findOneByInput($input);
-        if ($wordResult !== null) {
+        $wordResult = $this->hyphenator->processOneWord($input);
+        
+        if (empty($wordResult->getNumberMatrix())) {
+            // word from db, number matrix not initialized
             $this->writer->printMinimalWordResult($wordResult);
         } else {
+            // newly hyphenated word with full info
             $this->logger->debug('New word "%s", adding to DB', [$input]);
-            [$array, $tree] = $this->reader->getPatternMatchers('array');
-            $wordResult = $this->hyphenator->wordToSyllables(new WordInput($input), $array, $tree);
             $this->writer->printFullWordResult($wordResult);
-            $this->wordRepo->insertOne($wordResult);
         }
     }
 }

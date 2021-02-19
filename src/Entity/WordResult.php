@@ -49,9 +49,9 @@ class WordResult extends WordInput implements \JsonSerializable
     {
         if ($input !== null) {
             parent::__construct($input->getInput(), $input->getExpectedResult());
-            $this->matchedPatterns = [];
-            $this->numberMatrix = [];
         }
+        $this->matchedPatterns = [];
+        $this->numberMatrix = [];
     }
     
     public function __toString()

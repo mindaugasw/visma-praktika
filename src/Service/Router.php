@@ -15,11 +15,10 @@ class Router
     private const CONTROLLER_BASE_PATH = '/Controller';
     private const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
     
-    private ResponseHandler $responseHandler;
-    
-    public function __construct(ResponseHandler $responseHandler)
-    {
-        $this->responseHandler = $responseHandler;
+    public function __construct(
+        private Container $diContainer,
+        private ResponseHandler $responseHandler
+    ) {
     }
     
     /**
@@ -87,7 +86,7 @@ class Router
         if (empty($actionPath)) { // default controller
             $className = self::DEFAULT_CONTROLLER_NAME;
             return [
-                Container::getStatic($className),
+                $this->diContainer->get($className),
                 $actionPath
             ];
         }
@@ -115,7 +114,7 @@ class Router
                 
                 return [
                     //new $className($this->app),
-                    Container::getStatic($className),
+                    $this->diContainer->get($className),
                     array_slice($actionPath, $i + 1)
                 ];
             }

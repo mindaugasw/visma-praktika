@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Service\Hyphenator;
 
@@ -37,7 +39,6 @@ class HyphenationHandler
      * Search in DB first and if not found then load hyphenation data, hyphenate
      * the word, and save it to DB
      * @param string $input
-     * @param string $defaultSearchDS
      * @return WordResult
      */
     public function processOneWord(string $input): WordResult

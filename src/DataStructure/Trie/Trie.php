@@ -4,6 +4,7 @@ namespace App\DataStructure\Trie;
 
 use App\DataStructure\TextSearchInterface;
 use App\Entity\WordInput;
+use Exception;
 
 // What is Trie: https://uploads.toptal.io/blog/image/106/toptal-blog-3_F.png
 class Trie implements TextSearchInterface
@@ -119,7 +120,7 @@ class Trie implements TextSearchInterface
                 $node = $deeperNode;
     
                 if (strlen($remainingPath) === 0) {
-                    throw new \Exception(sprintf('Algorithm error while adding "%s" to the tree', $key));
+                    throw new Exception(sprintf('Algorithm error while adding "%s" to the tree', $key));
                 }
     
                 [$pathChar, $remainingPath] = $this->advancePathStrings($remainingPath);

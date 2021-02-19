@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\DIContainer;
 
 use App\Service\DIContainer\Config\ContainerConfig;
+use Exception;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionParameter;
@@ -20,7 +21,7 @@ class Container implements ContainerInterface
     public function __construct()
     {
         if (isset(self::$instance)) { // TODO remove
-            throw new \Exception();
+            throw new Exception();
         } else {
             self::$instance = $this;
         }
@@ -51,13 +52,15 @@ class Container implements ContainerInterface
     /**
      * Static wrapper for instance method get()
      *
+     * TODO remove
+     *
      * @param  string $id
      * @return object
      */
     public static function getStatic(string $id): object
     {
         if (!isset(self::$instance)) {
-            throw new \Exception();
+            throw new Exception();
         }
         
         return self::$instance->get($id);

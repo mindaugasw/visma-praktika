@@ -21,27 +21,12 @@ class InteractiveInput implements CommandInterface
      */
     private const ARG_INPUT = 'input';
         
-    private InputReader $reader;
-    private LoggerInterface $logger;
-    private ArgsHandler $argsHandler;
-    private HyphenationHandler $hyphenator;
-    private OutputWriter $writer;
-    private WordResultRepository $wordRepo;
-    
     public function __construct(
-        InputReader $reader,
-        LoggerInterface $logger,
-        ArgsHandler $argsHandler,
-        HyphenationHandler $hyphenator,
-        OutputWriter $writer,
-        WordResultRepository $wordRepo
+        private LoggerInterface $logger,
+        private ArgsHandler $argsHandler,
+        private HyphenationHandler $hyphenator,
+        private OutputWriter $writer,
     ) {
-        $this->reader = $reader;
-        $this->logger = $logger;
-        $this->argsHandler = $argsHandler;
-        $this->hyphenator = $hyphenator;
-        $this->writer = $writer;
-        $this->wordRepo = $wordRepo;
         $argsHandler->addArgConfig(self::ARG_INPUT, 'i', false);
     }
     

@@ -9,7 +9,6 @@ use App\Repository\HyphenationPatternRepository;
 use App\Repository\WordResultRepository;
 use App\Repository\WordToPatternRepository;
 use App\Service\ArgsHandler;
-use App\Service\Hyphenator\HyphenationHandler;
 use App\Service\Hyphenator\Hyphenator;
 use App\Service\InputReader;
 use App\Service\Profiler;
@@ -39,31 +38,15 @@ class ImportData implements CommandInterface
     
     public const WORDS_PER_BATCH = 10_000;
     
-    private ArgsHandler $argsHandler;
-    private InputReader $reader;
-    private LoggerInterface $logger;
-    private Hyphenator $hyphenator;
-    private HyphenationPatternRepository $patternRepo;
-    private WordToPatternRepository $wtpRepo;
-    private WordResultRepository $wordRepo;
-    
     public function __construct(
-        ArgsHandler $argsHandler,
-        InputReader $reader,
-        LoggerInterface $logger,
-        Hyphenator $hyphenator,
-        HyphenationPatternRepository $patternRepo,
-        WordToPatternRepository $wtpRepo,
-        WordResultRepository $wordRepo
+        private ArgsHandler $argsHandler,
+        private InputReader $reader,
+        private LoggerInterface $logger,
+        private Hyphenator $hyphenator,
+        private HyphenationPatternRepository $patternRepo,
+        private WordToPatternRepository $wtpRepo,
+        private WordResultRepository $wordRepo
     ) {
-        $this->argsHandler = $argsHandler;
-        $this->reader = $reader;
-        $this->logger = $logger;
-        $this->hyphenator = $hyphenator;
-        $this->patternRepo = $patternRepo;
-        $this->wtpRepo = $wtpRepo;
-        $this->wordRepo = $wordRepo;
-    
         $argsHandler->addArgConfig(self::ARG_PATTERNS_FILE, 'p');
         $argsHandler->addArgConfig(self::ARG_WORDS_FILE, 'w');
     }

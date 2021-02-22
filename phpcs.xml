@@ -17,8 +17,17 @@
     <rule ref="Generic.PHP.LowerCaseConstant"/>
     <rule ref="Squiz.PHP.Eval"/>
     <rule ref="Squiz.PHP.GlobalKeyword"/>
-    <!-- Ignore for php8.0 constructors -->
+    <!-- Ignore for php8.0 -->
     <rule ref="Generic.WhiteSpace.ScopeIndent.IncorrectExact">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.WhiteSpace.ScopeKeywordSpacing.Incorrect">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.Operators.OperatorSpacing.NoSpaceAfter">
         <severity>0</severity>
     </rule>
     <rule ref="PSR12" />

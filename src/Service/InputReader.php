@@ -16,8 +16,8 @@ use SplFileObject;
 class InputReader
 {
     // Default files
-    private const PATTERNS_FILE = __DIR__.'/../../data/patterns.txt';
-    private const WORDS_FILE = __DIR__.'/../../data/words-140k.txt';
+    private const PATTERNS_FILE = __DIR__ . '/../../data/patterns.txt';
+    private const WORDS_FILE = __DIR__ . '/../../data/words-140k.txt';
     
     private ArgsHandler $argsHandler;
     private LoggerInterface $logger;

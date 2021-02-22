@@ -93,7 +93,8 @@ class HashTable implements TextSearchInterface
         }
         
         // end pattern not at the end
-        if (($pattern->isEndPattern()
+        if (
+            ($pattern->isEndPattern()
             && $pattern->getPosition() + strlen($pattern->getPatternText()) !== strlen($text))
         ) {
             return false;

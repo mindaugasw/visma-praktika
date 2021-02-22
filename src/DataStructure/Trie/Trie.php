@@ -4,6 +4,7 @@ namespace App\DataStructure\Trie;
 
 use App\DataStructure\TextSearchInterface;
 use App\Entity\WordInput;
+use App\Exception\NotImplementedException;
 use Exception;
 
 // What is Trie: https://uploads.toptal.io/blog/image/106/toptal-blog-3_F.png
@@ -26,7 +27,7 @@ class Trie implements TextSearchInterface
         $tree = new Trie();
     
         foreach ($array as $element) {
-            $tree->addValue($element->getPattern(), $element); // TODO make DS more reusable
+            $tree->addValue($element->getPatternNoNumbers(), $element); // TODO make DS more reusable
         }
         
         return $tree;
@@ -37,6 +38,10 @@ class Trie implements TextSearchInterface
      */
     public static function constructFromDictionary(array $dictionary): static
     {
+        throw new NotImplementedException();
+        // TODO building tree only works with pattern->getPatternNoNumbers() as
+        //      $key, which is not enforced as client is responsible for key setting
+        
         $tree = new Trie();
         
         foreach ($dictionary as $key => $value) {

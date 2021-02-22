@@ -12,6 +12,7 @@ use App\Repository\WordResultRepository;
 use App\Service\InputReader;
 
 /**
+ * A middle-man functionality between hyphenation algorithm and all other services.
  * Provides methods for word hyphenation, automatically choosing patterns source
  * (DB or file) and saving new words to DB
  * @package App\Service\Hyphenator

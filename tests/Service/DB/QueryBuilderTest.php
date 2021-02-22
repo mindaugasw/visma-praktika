@@ -8,6 +8,10 @@ use PHPUnit\Framework\TestCase;
 
 class QueryBuilderTest extends TestCase
 {
+    /**
+     * Remove more than 1 consecutive space
+     * Should be used with preg_replace to replace with nothing
+     */
     private const REGEX_SPACE_REMOVE = '/ {2,}/';
     
     public function testSelect(): void

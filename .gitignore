@@ -10,6 +10,9 @@ config.local.ini
 !/data/words-1k.txt
 !/data/words-140k.txt
 
+# PHPUnit
+*.cache
+
 # Created by https://www.toptal.com/developers/gitignore/api/linux,phpstorm
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,phpstorm
 

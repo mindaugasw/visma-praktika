@@ -79,7 +79,7 @@ class HashTable implements TextSearchInterface
      * does not validate match position
      *
      * TODO move to separate wrapper class specifically for HyphenationPatterns
-     *      matching? To make this class more reusable
+     *      matching? To make HashTable more reusable
      *
      * @param  string             $text    Text on which search was performed
      * @param  HyphenationPattern $pattern Found pattern, with set $position field

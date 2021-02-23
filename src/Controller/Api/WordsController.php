@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Controller\BaseController;
-use App\Exception\EntityNotFoundException;
+use App\Exception\NotFoundException;
 use App\Repository\WordResultRepository;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
@@ -32,7 +32,7 @@ class WordsController extends BaseController
         $wordResult = $this->wordRepo->findOneById($id);
         
         if ($wordResult === null) {
-            throw new EntityNotFoundException();
+            throw new NotFoundException();
         } else {
             $this->wordRepo->delete($wordResult);
             return new JsonResponse('');

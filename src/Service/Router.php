@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Exception\HttpResponseExceptionInterface;
-use App\Exception\ObjectNotFoundException;
+use App\Exception\ActionNotFoundException;
 use App\Exception\ServerErrorException;
 use App\Service\DIContainer\Container;
 use App\Service\Response\JsonErrorResponse;
@@ -15,6 +15,8 @@ class Router
     private const CONTROLLER_BASE_PATH = '/Controller';
     private const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
     
+    private const STATIC_ASSETS_DIR = __DIR__ . '/../public/';
+    
     public function __construct(
         private Container $diContainer,
         private ResponseHandler $responseHandler
@@ -22,11 +24,12 @@ class Router
     }
     
     /**
-     * 1. Tries to find controller from url path or uses default
-     * 2. Tries to find method from:
-     * 2.1. remaining url path
-     * 2.2. request method
-     * 2.3. index() method
+     * 1. Searches for static asset
+     * 2. Tries to find controller from url path or uses default
+     * 3. Tries to find method from:
+     * 3.1. remaining url path
+     * 3.2. request method (GET,POST,etc)
+     * 3.3. index() method
      *
      * Supported routing examples:
      * GET  /api/words/ => App\Controller\Api\WordsController->get()
@@ -48,12 +51,14 @@ class Router
         );
         
         try {
+            parse_str($url['query'], $queryArgs);
+            
+            $this->tryLoadStaticAsset($url['path'], $queryArgs);
+            
             // find class
             [$controllerObj, $actionPath] = $this->getController($actionPath);
             $methodName = $this->getMethod($controllerObj, $actionPath);
     
-            parse_str($url['query'], $queryArgs);
-            
             // call action
             $response = $controllerObj->$methodName($queryArgs);
             if (!is_a($response, Response::class)) {
@@ -67,6 +72,26 @@ class Router
         }
         
         $this->responseHandler->returnResponse($response);
+    }
+    
+    /**
+     * If there is a static asset in public/ with given name, return that file
+     * @param string $urlPath
+     * @param array $queryArgs
+     */
+    private function tryLoadStaticAsset(string $urlPath, array $queryArgs)
+    {
+        $filename = self::STATIC_ASSETS_DIR . $urlPath;
+        if (file_exists($filename)) {
+            if (isset($queryArgs['d']) && $queryArgs['d'] === '1') {
+                $download = true;
+            } else {
+                $download = false;
+            }
+            
+            $this->responseHandler->returnFile($filename, $download);
+            die();
+        }
     }
     
     /**
@@ -120,7 +145,7 @@ class Router
             }
         }
         
-        throw new ObjectNotFoundException('Controller not found');
+        throw new ActionNotFoundException('Controller not found');
     }
     
     /**
@@ -150,6 +175,6 @@ class Router
             }
         }
         
-        throw new ObjectNotFoundException('Action not found');
+        throw new ActionNotFoundException('Action not found');
     }
 }

@@ -3,7 +3,8 @@
 		"psr/log": "^1.1",
 		"psr/container": "^1.0",
       	"ext-pdo": "*",
-    	"ext-readline": "*"
+    	"ext-readline": "*",
+    	"ext-fileinfo": "*"
     },
 	"require-dev": {
 		"squizlabs/php_codesniffer": "^3.5",

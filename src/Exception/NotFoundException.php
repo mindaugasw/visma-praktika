@@ -5,11 +5,11 @@ namespace App\Exception;
 use Throwable;
 
 /**
- * Requested entity object was not found in DB.
+ * Requested entity, file, or other object was not found.
  *
  * @package App\Exception
  */
-class EntityNotFoundException extends \Exception implements HttpResponseExceptionInterface
+class NotFoundException extends \Exception implements HttpResponseExceptionInterface
 {
     private int $status;
     

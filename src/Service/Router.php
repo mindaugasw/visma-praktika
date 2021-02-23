@@ -13,7 +13,7 @@ use App\Service\Response\ResponseHandler;
 class Router
 {
     private const CONTROLLER_BASE_PATH = '/Controller';
-    private const DEFAULT_CONTROLLER_NAME = 'NotImplemented'; // TODO
+    private const DEFAULT_CONTROLLER_NAME = 'Main';
     
     private const STATIC_ASSETS_DIR = __DIR__ . '/../public/';
     
@@ -50,9 +50,13 @@ class Router
             }
         );
         
-        try {
+        if (isset($url['query'])) {
             parse_str($url['query'], $queryArgs);
-            
+        } else {
+            $queryArgs = [];
+        }
+        
+        try {
             $this->tryLoadStaticAsset($url['path'], $queryArgs);
             
             // find class
@@ -82,7 +86,7 @@ class Router
     private function tryLoadStaticAsset(string $urlPath, array $queryArgs)
     {
         $filename = self::STATIC_ASSETS_DIR . $urlPath;
-        if (file_exists($filename)) {
+        if ($urlPath !== '/' && file_exists($filename)) {
             if (isset($queryArgs['d']) && $queryArgs['d'] === '1') {
                 $download = true;
             } else {
@@ -108,12 +112,8 @@ class Router
      */
     private function getController(array $actionPath): array
     {
-        if (empty($actionPath)) { // default controller
-            $className = self::DEFAULT_CONTROLLER_NAME;
-            return [
-                $this->diContainer->get($className),
-                $actionPath
-            ];
+        if (empty($actionPath)) { // route to default controller
+            $actionPath[] = self::DEFAULT_CONTROLLER_NAME;
         }
         
         $actionPathUcfirst = array_map( // convert to ucfirst

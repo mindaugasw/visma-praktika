@@ -14,7 +14,7 @@ abstract class BaseController
     }
     
     /**
-     * Get arg by $key or $default value if it's not set.
+     * Get query arg by $key or $default value if it's not set.
      * If $isRequired=true and arg isn't set, will throw exception instead of
      * return $default value
      *

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Service\Response;
 
+use App\Template\CommonUtils;
 use Exception;
 
 class HtmlResponse extends Response
 {
     private const TEMPLATES_DIR = __DIR__ . '/../../Template/';
     
-    public function __construct(string $template, array $templateArgs, int $statusCode = 200, array $headers = [])
+    public function __construct(string $template, array $templateArgs = [], int $statusCode = 200, array $headers = [])
     {
         $filename = self::TEMPLATES_DIR . $template . '.tpl.php';
         
         $GLOBALS['tpl'] = $templateArgs;
-        
-        $content = $this->getTemplateContent($filename);
+        $content = CommonUtils::includeString($filename);
         
         parent::__construct($content, $statusCode, $headers);
     }

@@ -17,6 +17,20 @@
     <rule ref="Generic.PHP.LowerCaseConstant"/>
     <rule ref="Squiz.PHP.Eval"/>
     <rule ref="Squiz.PHP.GlobalKeyword"/>
+    
+    <!-- Ignore for templating engine -->
+    <rule ref="Squiz.PHP.GlobalKeyword.NotAllowed">
+        <exclude-pattern>*.tpl.php</exclude-pattern>
+        <exclude-pattern>CommonUtils.php</exclude-pattern>
+    </rule>
+    <rule ref="Generic.Files.LineLength.TooLong">
+        <exclude-pattern>*.tpl.php</exclude-pattern>
+        <exclude-pattern>CommonUtils.php</exclude-pattern>
+    </rule>
+    <rule ref="Internal.NoCodeFound">
+        <exclude-pattern>*.tpl.php</exclude-pattern>
+    </rule>
+    
     <!-- Ignore for php8.0 -->
     <rule ref="Generic.WhiteSpace.ScopeIndent.IncorrectExact">
         <severity>0</severity>

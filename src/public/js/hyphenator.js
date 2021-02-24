@@ -23,6 +23,12 @@ const elHypResultText = document.getElementById('hypResultText');
 elHypButton.onclick = function () {
     Hyphenator.handleHyphenation();
 };
+elHypInput.addEventListener('keyup', function (event) {
+    if (event.key === 'Enter') {
+        elHypButton.click();
+        // Hyphenator.handleHyphenation();
+    }
+});
 
 class Hyphenator
 {

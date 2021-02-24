@@ -26,6 +26,9 @@ $devEnv = (Container::getStatic(App::class))->isDevEnv();
                 <li class="nav-item">
                     <a class="nav-link disabled" href="#">Patterns</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/mindaugasw/visma-praktika" target="_blank" rel="noreferrer">About</a>
+                </li>
             </ul>
         </div>
 

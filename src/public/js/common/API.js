@@ -1,10 +1,5 @@
 export default class API
 {
-    static TestMethod()
-    {
-        console.log('form API.js');
-    }
-    
     static BaseUrl = '/api';
 
     /**

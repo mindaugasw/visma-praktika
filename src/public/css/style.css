@@ -1,0 +1,10 @@
+body {
+    background-image: url("/img/background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    /*height: 100%;*/
+    /*width: 100vw;*/
+    /*background-attachment: scroll;*/
+}

@@ -10,7 +10,8 @@ class ResponseHandler
      * Replace mime types for files with $key extension with $value mime type
      */
     private const MIME_REPLACE = [
-        'js' => 'text/javascript'
+        'js' => 'text/javascript',
+        'css' => 'text/css',
     ];
     
     public function __construct()
@@ -38,7 +39,7 @@ class ResponseHandler
      */
     public function returnFile(string $filename, bool $download = false)
     {
-        // TODO convert to a separate Response class
+        // TODO move to a separate Response class
         if (!file_exists($filename)) {
             throw new NotFoundException(sprintf('File "%s" not found', $filename));
         }

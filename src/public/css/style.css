@@ -8,3 +8,8 @@ body {
     /*width: 100vw;*/
     /*background-attachment: scroll;*/
 }
+
+.pagination > li a {
+    min-width: 2.5em;
+    text-align: center;
+}

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Template\CommonUtils;
 
 global $tpl;

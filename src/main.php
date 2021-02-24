@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Command\CommandManager;
 use App\Service\DIContainer\Container;
 use App\Service\Router;

@@ -1,7 +1,7 @@
 import API from './common/API.js';
 
 // element objects:
-// input
+// hyphenation input
 const elHypButton = document.getElementById('hypButton');
 const elHypInput = document.getElementById('hypInput');
 
@@ -14,7 +14,6 @@ const elHypResultWord = document.getElementById('hypResultWord');
 const elHypResultWordCount = document.getElementById('hypResultWordCount');
 const elHypResultWordList = document.getElementById('hypResultWordList');
 
-
 // text result
 const blockHypResultText = document.getElementById('hypBlockResultText');
 const elHypResultText = document.getElementById('hypResultText');
@@ -26,7 +25,6 @@ elHypButton.onclick = function () {
 elHypInput.addEventListener('keyup', function (event) {
     if (event.key === 'Enter') {
         elHypButton.click();
-        // Hyphenator.handleHyphenation();
     }
 });
 
@@ -42,8 +40,6 @@ class Hyphenator
             return;
         }
 
-        // this.hideAllBlocks();
-        // this.showLoadingIcon();
         this.showOnlyBlock(blockHypResultLoading);
 
         if (numberOfWords > 1) {

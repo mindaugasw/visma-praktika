@@ -93,9 +93,16 @@ class Hyphenator
                     $res->getResultWithNumbers()
                 )
             )
-        ); // TODO strval remove
+        );
     
-        $res->setResult(str_replace(' ', '', $res->getResultWithSpaces()));
+        // Workaround to remove hyphens at the end of the word
+        // TODO fix the main algorithm instead of workaround
+        $resultString = str_replace(' ', '', $res->getResultWithSpaces());
+        if (str_ends_with($resultString, '-')) {
+            $resultString = substr($resultString, 0, -1);
+        }
+        
+        $res->setResult($resultString);
     
         return $res;
     }

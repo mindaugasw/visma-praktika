@@ -21,8 +21,8 @@ class PatternController extends BaseController
     /**
      * Get paginated list of patterns
      * Args:
-     * - limit, default 20
-     * - page, default 1
+     * - limit, int, optional, default 14
+     * - page, int, optional, default 1
      *
      * @param $args
      * @return Response
@@ -37,6 +37,13 @@ class PatternController extends BaseController
         return new HtmlResponse('Page/Pattern/index', ['patterns' => $paginatedList]);
     }
     
+    /**
+     * Args:
+     * - pattern, int, required. Pattern ID
+     *
+     * @param $args
+     * @return Response
+     */
     public function view_get($args): Response
     {
         $id = intval($this->getArgOrDefault($args, 'pattern', isRequired: true));

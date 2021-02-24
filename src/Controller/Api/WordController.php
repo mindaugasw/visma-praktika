@@ -8,7 +8,7 @@ use App\Repository\WordResultRepository;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
 
-class WordsController extends BaseController
+class WordController extends BaseController
 {
     private WordResultRepository $wordRepo;
     
@@ -20,7 +20,8 @@ class WordsController extends BaseController
     
     /**
      * Delete word from hyphenated words DB
-     * Args: int $id
+     * Args:
+     * - id, int, required
      *
      * @param  array $args
      * @return Response

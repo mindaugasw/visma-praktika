@@ -1,6 +1,18 @@
-# Visma praktika
+# Hyphenator
 
-Usage:
+Simple application to hyphenate text. Enter a word -> get hyphenated word.
+
+App can be used trough CLI interface, REST API, or accessed as webpage.
+
+More info and documentation:  
+- [Setting up application to run locally]()  
+- [Usage through CLI interface]()  
+- [Usage trough REST API interface]()  
+- [Usage as webpage]()  
+
+
+---
+CLI usage:
   
 `php -f src/main.php -- args...`
 

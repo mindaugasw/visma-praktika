@@ -10,7 +10,7 @@ use App\Service\Response\ErrorResponse;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
 
-class PatternsController extends BaseController
+class PatternController extends BaseController
 {
     private HyphenationPatternRepository $patternRepo;
     
@@ -22,7 +22,8 @@ class PatternsController extends BaseController
     
     /**
      * Get single pattern
-     * Args: string $pattern
+     * Args:
+     * - id, int, required. Pattern ID
      *
      * @param  array $args
      * @return Response
@@ -43,20 +44,21 @@ class PatternsController extends BaseController
     
     /**
      * Get paginated list of patterns
-     * Args: int $offset, int $limit
+     * Args:
+     * - limit, int, optional, default 20
+     * - page, int, optional, default 1
      *
      * @param  array $args
      * @return Response
      */
     public function list_get(array $args): Response
     {
-        // TODO update to use PaginatedList
-        throw new NotImplementedException();
-        $offset = $this->getArgOrDefault($args, 'offset', 0, false);
-        $limit = $this->getArgOrDefault($args, 'limit', 20, false);
+        // TODO refactor to merge with Api\PatternController::index_get
+        $limit = intval($this->getArgOrDefault($args, 'limit', 20, false));
+        $offset = (intval($this->getArgOrDefault($args, 'page', 1, false)) - 1) * $limit;
+    
+        $paginatedList = $this->patternRepo->getPaginated($limit, $offset);
         
-        $patterns = $this->patternRepo->getPaginated($limit, $offset);
-        
-        return new JsonResponse($patterns);
+        return new JsonResponse($paginatedList);
     }
 }

@@ -10,6 +10,10 @@ use App\Service\Response\Response;
 
 class MainController extends BaseController
 {
+    /**
+     * Args:
+     * none
+     */
     public function index_get(): Response
     {
         return new HtmlResponse('Page/Hyphenator/index');

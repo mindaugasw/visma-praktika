@@ -6,6 +6,7 @@ use App\Exception\HttpResponseExceptionInterface;
 use App\Exception\ActionNotFoundException;
 use App\Exception\ServerErrorException;
 use App\Service\DIContainer\Container;
+use App\Service\Response\FileResponse;
 use App\Service\Response\JsonErrorResponse;
 use App\Service\Response\Response;
 use App\Service\Response\ResponseHandler;
@@ -57,16 +58,20 @@ class Router
         }
         
         try {
-            $this->tryLoadStaticAsset($url['path'], $queryArgs);
+            $response = $this->tryLoadStaticAsset($url['path'], $queryArgs);
             
-            // find class
-            [$controllerObj, $actionPath] = $this->getController($actionPath);
-            $methodName = $this->getMethod($controllerObj, $actionPath);
+            if ($response === false) {
+                // static asset not found, continue to controller
+                
+                // find class
+                [$controllerObj, $actionPath] = $this->getController($actionPath);
+                $methodName = $this->getMethod($controllerObj, $actionPath);
     
-            // call action
-            $response = $controllerObj->$methodName($queryArgs);
-            if (!is_a($response, Response::class)) {
-                throw new ServerErrorException('Controller must return Response object');
+                // call action
+                $response = $controllerObj->$methodName($queryArgs);
+                if (!is_a($response, Response::class)) {
+                    throw new ServerErrorException('Controller must return Response object');
+                }
             }
         } catch (HttpResponseExceptionInterface $exception) {
             $response = new JsonErrorResponse(
@@ -75,15 +80,16 @@ class Router
             );
         }
         
-        $this->responseHandler->returnResponse($response);
+        $this->responseHandler->echoResponse($response);
     }
     
     /**
      * If there is a static asset in public/ with given name, return that file
      * @param string $urlPath
      * @param array $queryArgs
+     * @return Response|bool
      */
-    private function tryLoadStaticAsset(string $urlPath, array $queryArgs)
+    private function tryLoadStaticAsset(string $urlPath, array $queryArgs): Response|bool
     {
         $filename = self::STATIC_ASSETS_DIR . $urlPath;
         if ($urlPath !== '/' && file_exists($filename)) {
@@ -93,9 +99,13 @@ class Router
                 $download = false;
             }
             
-            $this->responseHandler->returnFile($filename, $download);
-            die();
+            return new FileResponse($filename, $download);
+            
+            //$this->responseHandler->returnFile($filename, $download);
+            //die();
         }
+        
+        return false;
     }
     
     /**

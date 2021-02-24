@@ -100,44 +100,19 @@ class PaginatedList implements JsonSerializable
             $diff = $this->last - $page - $pagesAfter;
             $pagesAfter += $diff;
         }
-        
-        // first page. Only add if it isn't current $page
-        /*if ($page > 1) {
-            $pageRange = [
-                'first' => 1
-            ];
-        }*/
     
-        // previous page. Only add if it's at least 2nd page
-        /*if ($page > 1) {
-            $pageRange['previous'] = $page - 1;
-        }*/
-        
         // range before $page
         for ($i = $page - $pagesBefore; $i < $page; $i++) {
-            //$pageRange[$i] = $i;
             $pageRange[] = $i;
         }
         
         // current $page
-        //$pageRange[$page] = $page;
         $pageRange[] = $page;
         
         // range after $page
         for ($i = $page + 1; $i < $page + $pagesAfter + 1; $i++) {
-            //$pageRange[$i] = $i;
             $pageRange[] = $i;
         }
-    
-        // next page. Only add if it's not $lastPage page
-        /*if ($page < $lastPage) {
-            $pageRange['next'] = $page + 1;
-        }*/
-        
-        // last page
-        /*if ($page < $lastPage) {
-            $pageRange['last'] = $lastPage;
-        }*/
         
         $this->pageRange = $pageRange;
     }

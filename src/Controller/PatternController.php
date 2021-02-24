@@ -26,7 +26,7 @@ class PatternController extends BaseController
      */
     public function index_get($args): ?Response
     {
-        $limit = intval($this->getArgOrDefault($args, 'limit', 20, false));
+        $limit = intval($this->getArgOrDefault($args, 'limit', 14, false));
         $offset = (intval($this->getArgOrDefault($args, 'page', 1, false)) - 1) * $limit;
         
         $paginatedList = $this->patternRepo->getPaginated($limit, $offset);

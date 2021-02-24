@@ -63,6 +63,54 @@ class PaginatedList implements JsonSerializable
         return get_object_vars($this);
     }
     
+    /**
+     * @return array
+     */
+    public function getItems(): array
+    {
+        return $this->items;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getPage(): int
+    {
+        return $this->page;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getPerPage(): int
+    {
+        return $this->perPage;
+    }
+    
+    /**
+     * @return int|void
+     */
+    public function getCount(): int
+    {
+        return $this->count;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getCountTotal(): int
+    {
+        return $this->countTotal;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getPageRange(): array
+    {
+        return $this->pageRange;
+    }
+    
     private function buildPageRange(int $limit): void
     {
         // TODO add tests

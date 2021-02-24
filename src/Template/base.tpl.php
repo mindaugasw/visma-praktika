@@ -22,7 +22,7 @@ echo <<<TPL
     <body>
         {$tpl['navbar']}
         
-        <div class="container mt-5">
+        <div class="container mt-2">
             <div class="row justify-content-center">
                 <div class="col-xs-12 col-md-10 col-lg-8 col-xl-7 col-xxl-6">
                     {$tpl['body']}

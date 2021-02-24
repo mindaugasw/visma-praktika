@@ -68,10 +68,19 @@ class DBConnection
      * @param  array  $params
      * @return bool was the operation successful?
      */
-    public function query(string $query, array $params = [])
+    public function query(string $query, array $params = []): bool
     {
         $statement = $this->connection->prepare($query);
         return $statement->execute($params);
+    }
+    
+    public function fetch(string $query, array $params = []): array
+    {
+        $statement = $this->connection->prepare($query);
+        $statement->execute($params);
+        //$assoc = $statement->fetchAll(PDO::FETCH_ASSOC);
+        //$named = $statement->fetchAll(PDO::FETCH_NAMED);
+        return $statement->fetchAll(PDO::FETCH_BOTH);
     }
     
     /**

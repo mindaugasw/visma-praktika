@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
-class HyphenationPattern implements \JsonSerializable
+use JsonSerializable;
+
+class HyphenationPattern implements JsonSerializable
 {
     // Pattern types, depending on dot position in the pattern
     public const TYPE_REGULAR = 0;

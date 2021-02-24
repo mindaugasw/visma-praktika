@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\HyphenationPattern;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
+use App\Service\Paginator\PaginatedList;
 use Exception;
 
 class HyphenationPatternRepository
@@ -48,15 +49,28 @@ class HyphenationPatternRepository
         }
     }
     
-    public function getPaginated(int $limit, int $offset): array
+    /**
+     * @param int $limit
+     * @param int $offset
+     * @return PaginatedList<HyphenationPattern>
+     */
+    public function getPaginated(int $limit, int $offset): PaginatedList
     {
-        $sql = (new QueryBuilder())
+        $itemsSql = (new QueryBuilder())
             ->select('*')
             ->from(self::TABLE)
             ->limitOffset($limit, $offset)
             ->getQuery();
         
-        return $this->db->fetchClass($sql, [], HyphenationPattern::class);
+        $countSql = (new QueryBuilder())
+            ->select('COUNT(id)')
+            ->from(self::TABLE)
+            ->getQuery();
+        
+        $items = $this->db->fetchClass($itemsSql, [], HyphenationPattern::class);
+        $totalCount = intval($this->db->fetch($countSql, [])[0][0]);
+        
+        return new PaginatedList($items, $limit, $offset, $totalCount);
     }
     
     /**

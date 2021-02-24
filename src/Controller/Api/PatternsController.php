@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Controller\BaseController;
+use App\Exception\NotImplementedException;
 use App\Repository\HyphenationPatternRepository;
 use App\Service\Response\JsonErrorResponse;
 use App\Service\Response\JsonResponse;
@@ -47,6 +48,8 @@ class PatternsController extends BaseController
      */
     public function list_get(array $args): Response
     {
+        // TODO update to use PaginatedList
+        throw new NotImplementedException();
         $offset = $this->getArgOrDefault($args, 'offset', 0, false);
         $limit = $this->getArgOrDefault($args, 'limit', 20, false);
         

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Exception\NotFoundException;
 use App\Repository\HyphenationPatternRepository;
 use App\Service\Response\HtmlResponse;
+use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
 
 class PatternController extends BaseController
@@ -24,7 +27,7 @@ class PatternController extends BaseController
      * @param $args
      * @return Response
      */
-    public function index_get($args): ?Response
+    public function index_get($args): Response
     {
         $limit = intval($this->getArgOrDefault($args, 'limit', 14, false));
         $offset = (intval($this->getArgOrDefault($args, 'page', 1, false)) - 1) * $limit;
@@ -32,5 +35,16 @@ class PatternController extends BaseController
         $paginatedList = $this->patternRepo->getPaginated($limit, $offset);
         
         return new HtmlResponse('Page/Pattern/index', ['patterns' => $paginatedList]);
+    }
+    
+    public function view_get($args): Response
+    {
+        $id = intval($this->getArgOrDefault($args, 'pattern', isRequired: true));
+        try {
+            $pattern = $this->patternRepo->findOne($id);
+            return new HtmlResponse('Page/Pattern/view', ['pattern' => $pattern]);
+        } catch (NotFoundException $ex) {
+            return new JsonErrorResponse('Pattern not found', 404);
+        }
     }
 }

@@ -24,7 +24,6 @@ function getPageItemHtml(
     bool $isDisabled = false,
     bool $isActive = false
 ): string {
-    
     global $tpl;
     $linkFormat = $tpl['paginationLinkFormat'];
     

@@ -5,6 +5,11 @@ declare(strict_types=1);
 use App\Service\App;
 use App\Service\DIContainer\Container;
 
+/*
+ * Params:
+ * none
+ */
+
 $devEnv = (Container::getStatic(App::class))->isDevEnv();
 
 ?>
@@ -21,9 +26,6 @@ $devEnv = (Container::getStatic(App::class))->isDevEnv();
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#">Words</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/pattern">Patterns</a>

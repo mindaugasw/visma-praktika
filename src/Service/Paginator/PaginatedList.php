@@ -13,7 +13,7 @@ class PaginatedList implements JsonSerializable
      * i.e. if $page = 5 and PAGE_RANGE_DISTANCE = 2, $pageRange will be
      * [3, 4, 5, 6, 7]
      */
-    private const PAGE_RANGE_DISTANCE = 2;
+    private const PAGE_RANGE_DISTANCE = 3;
     
     /**
      * Items list for this page

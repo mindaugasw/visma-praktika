@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\HyphenationPattern;
+use App\Exception\NotFoundException;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
 use App\Service\Paginator\PaginatedList;
@@ -32,7 +33,7 @@ class HyphenationPatternRepository
         return $this->db->fetchClass($sql, [], HyphenationPattern::class);
     }
     
-    public function findOne(int $patternId): ?HyphenationPattern
+    public function findOne(int $patternId): HyphenationPattern
     {
         $sql = (new QueryBuilder())
             ->select('*')
@@ -43,7 +44,7 @@ class HyphenationPatternRepository
         $results = $this->db->fetchClass($sql, [$patternId], HyphenationPattern::class);
         
         if (count($results) === 0) {
-            return null;
+            throw new NotFoundException();
         } else {
             return $results[0];
         }

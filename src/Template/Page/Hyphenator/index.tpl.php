@@ -6,6 +6,11 @@ use App\Template\CommonUtils;
 
 global $tpl;
 
+/*
+ * Params:
+ * none
+ */
+
 $loadingIcon = CommonUtils::getLoadingSpinner();
 
 $tpl['body'] = <<<TPL

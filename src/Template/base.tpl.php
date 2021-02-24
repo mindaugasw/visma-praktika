@@ -17,7 +17,7 @@ echo <<<TPL
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{$tpl['title']}</title>
-        {$tpl['stylesheets']}
+        {$tpl['stylesheetsAll']}
     </head>
     <body>
         {$tpl['navbar']}
@@ -30,7 +30,7 @@ echo <<<TPL
             </div>
         </div>
         
-        {$tpl['scripts']}
+        {$tpl['scriptsAll']}
     </body>
     </html>
 TPL;

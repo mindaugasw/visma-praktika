@@ -21,10 +21,10 @@ $devEnv = (Container::getStatic(App::class))->isDevEnv();
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Words</a>
+                    <a class="nav-link disabled" href="#">Words</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Patterns</a>
+                    <a class="nav-link disabled" href="#">Patterns</a>
                 </li>
             </ul>
         </div>

@@ -3,9 +3,10 @@
 namespace App\Controller\Api;
 
 use App\Controller\BaseController;
+use App\Exception\NotFoundException;
 use App\Exception\NotImplementedException;
 use App\Repository\HyphenationPatternRepository;
-use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\ErrorResponse;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
 
@@ -33,7 +34,8 @@ class PatternsController extends BaseController
         $pattern = $this->patternRepo->findOne($patternId);
         
         if ($pattern === null) {
-            return new JsonErrorResponse(statusCode: 404);
+            //return new ErrorResponse(statusCode: 404);
+            throw new NotFoundException('Pattern not found');
         }
         
         return new JsonResponse($pattern);

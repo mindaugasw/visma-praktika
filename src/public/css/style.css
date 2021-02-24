@@ -13,17 +13,11 @@ body {
 }
 
 #patternDetailsTable {
-    /*border-spacing: 15px !important;*/
     margin: auto;
-}
-
-#patternDetailsTable tr {
-    /*padding-bottom: 50px !important;*/
 }
 
 #patternDetailsTable th, #patternDetailsTable td {
     padding-top: 20px !important;
-    /*padding: 50px !important;*/
 }
 
 #patternDetailsTable th {
@@ -34,9 +28,3 @@ body {
     text-align: left;
     padding-left: 15px;
 }
-
-
-/*#patternDetailsTable td {*/
-/*    text-align: left;*/
-    /*padding: 50px !important;*/
-/*}*/

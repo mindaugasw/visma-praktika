@@ -3,8 +3,9 @@
 namespace App\Controller\Api;
 
 use App\Controller\BaseController;
+use App\Exception\BadRequestException;
 use App\Service\Hyphenator\HyphenationHandler;
-use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\ErrorResponse;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
 
@@ -30,7 +31,9 @@ class HyphenatorController extends BaseController
         $word = $this->getArgOrDefault($args, 'word');
         
         if (str_contains($word, ' ') || empty($word)) {
-            return new JsonErrorResponse(statusCode: 400);
+            //return new ErrorResponse(statusCode: 400);
+            throw new BadRequestException('Found more than one word in input string. '
+                                          .'Use appropriate method for text hyphenation.');
         }
         
         $wordResult = $this->hyphenationHandler->processOneWord($word);
@@ -50,7 +53,8 @@ class HyphenatorController extends BaseController
         $text = $this->getArgOrDefault($args, 'text');
         
         if (empty($text)) {
-            return new JsonErrorResponse();
+            //return new ErrorResponse();
+            throw new BadRequestException('No words found in text.');
         }
         
         $data = [

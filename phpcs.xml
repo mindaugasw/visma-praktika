@@ -30,6 +30,9 @@
     <rule ref="Internal.NoCodeFound">
         <exclude-pattern>*.tpl.php</exclude-pattern>
     </rule>
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>*.tpl.php</exclude-pattern>
+    </rule>
     
     <!-- Ignore for php8.0 -->
     <rule ref="Generic.WhiteSpace.ScopeIndent.IncorrectExact">

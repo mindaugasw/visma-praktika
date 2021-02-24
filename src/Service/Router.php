@@ -7,9 +7,10 @@ use App\Exception\ActionNotFoundException;
 use App\Exception\ServerErrorException;
 use App\Service\DIContainer\Container;
 use App\Service\Response\FileResponse;
-use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\ErrorResponse;
 use App\Service\Response\Response;
 use App\Service\Response\ResponseHandler;
+use Throwable;
 
 class Router
 {
@@ -74,9 +75,16 @@ class Router
                 }
             }
         } catch (HttpResponseExceptionInterface $exception) {
-            $response = new JsonErrorResponse(
+            $response = new ErrorResponse(
                 $exception->getMessage(),
+                $exception::class,
                 $exception->getStatus()
+            );
+        } catch (Throwable $exception) {
+            $response = new ErrorResponse(
+                'Internal server error occurred',
+                $exception::class,
+                500
             );
         }
         

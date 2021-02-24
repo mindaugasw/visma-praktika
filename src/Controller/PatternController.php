@@ -7,7 +7,7 @@ namespace App\Controller;
 use App\Exception\NotFoundException;
 use App\Repository\HyphenationPatternRepository;
 use App\Service\Response\HtmlResponse;
-use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\ErrorResponse;
 use App\Service\Response\JsonResponse;
 use App\Service\Response\Response;
 
@@ -44,7 +44,7 @@ class PatternController extends BaseController
             $pattern = $this->patternRepo->findOne($id);
             return new HtmlResponse('Page/Pattern/view', ['pattern' => $pattern]);
         } catch (NotFoundException $ex) {
-            return new JsonErrorResponse('Pattern not found', 404);
+            return new ErrorResponse('Pattern not found', $ex::class, $ex->getStatus());
         }
     }
 }

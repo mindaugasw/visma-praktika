@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Exception\BadRequestException;
-use App\Service\Response\JsonErrorResponse;
+use App\Service\Response\ErrorResponse;
 use App\Service\Response\ResponseHandler;
 
 abstract class BaseController

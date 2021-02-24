@@ -14,7 +14,7 @@ global $tpl;
 $loadingIcon = CommonUtils::getLoadingSpinner();
 
 $tpl['body'] = <<<TPL
-<div class="pt-5">
+<div class="pt-4">
     <div class="mt-5 pt-5" id="hypBlockInput">
         <label for="hypInput" class="form-label">Enter word or text to hyphenate:</label>
         <div class="input-group mb-3">

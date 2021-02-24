@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Template\CommonUtils;
 
 global $tpl;
+$error = $tpl['error'];
 
 /*
  * Params:
@@ -13,8 +14,9 @@ global $tpl;
  */
 
 $tpl['body'] = <<<TPL
-<div>
-    ERRRROR
+<div class="fs-2 mt-5 pt-5">
+    error <span class="fw-bold lh-1 ms-2 d-inline-block" style="font-size: 4em">{$error['status']}</span><br/>
+    {$error['message']}
 </div>
 TPL;
 

@@ -5,7 +5,7 @@ namespace App\Service\Response;
 class Response
 {
     // headers keys
-    public const HEADER_CONTENT_TYPE = 'Content-Type';
+    protected const HEADER_CONTENT_TYPE = 'Content-Type';
     
     protected string $data;
     protected int $statusCode;

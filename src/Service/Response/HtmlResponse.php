@@ -26,18 +26,18 @@ class HtmlResponse extends Response
         throw new Exception('Setting data not allow on HtmlResponse. Use constructor.');
     }
     
-    /**
+    /*
      * Returns template content as string, instead of outputting straight to
      * stdout with include
      * @param string $filename
      * @return string
      */
-    private function getTemplateContent(string $filename): string
+    /*private function getTemplateContent(string $filename): string
     {
         ob_start();
         include $filename;
         $content = ob_get_clean();
         ob_end_clean();
         return $content;
-    }
+    }*/
 }

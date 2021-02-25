@@ -11,6 +11,10 @@ use App\Exception\NotFoundException;
  */
 class FileResponse extends Response
 {
+    protected const HEADER_CONTENT_TRANSFER_ENCODING = 'Content-Transfer-Encoding';
+    protected const HEADER_CONTENT_LENGTH = 'Content-Length';
+    protected const HEADER_CONTENT_DISPOSITION = 'Content-Disposition';
+    
     /**
      * Replace mime types cuz mime_content_type() doesn't work reliably
      * Sets $value mime type for files with $key extension
@@ -40,12 +44,12 @@ class FileResponse extends Response
             $mimeType = mime_content_type($filename);
         }
         
-        $headers['Content-Type'] = $mimeType;
-        $headers['Content-Transfer-Encoding'] = 'Binary';
-        $headers['Content-Length'] = filesize($filename);
+        $headers[self::HEADER_CONTENT_TYPE] = $mimeType;
+        $headers[self::HEADER_CONTENT_TRANSFER_ENCODING] = 'Binary';
+        $headers[self::HEADER_CONTENT_LENGTH] = filesize($filename);
     
         if ($download) {
-            $headers['Content-Disposition'] = 'attachment; filename=' . $filename;
+            $headers[self::HEADER_CONTENT_DISPOSITION] = 'attachment; filename=' . $filename;
         }
         
         $data = $this->getFileContent($filename);

@@ -6,7 +6,7 @@ config.local.ini
 !/data/test-dictionary-1k.txt
 !/data/test-dictionary-140k.txt
 
-/data/db
+/data/db*
 /data/words-*
 !/data/words-1k.txt
 !/data/words-140k.txt

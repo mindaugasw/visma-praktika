@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+  hyphenator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "8080:80"
+    volumes:
+     - .:/code
+     # - ./config/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+     - ./config/php/php.ini:/usr/local/etc/php/conf.d/docker-php-config.ini
+    depends_on:
+      - db
+  
+  db:
+#    image: mysql
+    image: mariadb:10.5
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    volumes:
+#      - ./data:/docker-entrypoint-initdb.d
+      - ./data/db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hyphenator
+    ports:
+      - "3308:3306" # needed for phpmyadmin
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.1
+    restart: always
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8050:80"
+    depends_on:
+      - db

@@ -16,7 +16,7 @@ $devEnv = (Container::getStatic(App::class))->isDevEnv();
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">Hyphenator 3000</a>
+        <a class="navbar-brand" href="/">Hyphenator</a>
         
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
             <span class="navbar-toggler-icon"></span>

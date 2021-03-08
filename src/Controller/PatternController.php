@@ -27,7 +27,7 @@ class PatternController extends BaseController
      * @param $args
      * @return Response
      */
-    public function index_get($args): Response
+    public function index_get(array $args): Response
     {
         $limit = intval($this->getArgOrDefault($args, 'limit', 14, false));
         $offset = (intval($this->getArgOrDefault($args, 'page', 1, false)) - 1) * $limit;
@@ -44,7 +44,7 @@ class PatternController extends BaseController
      * @param $args
      * @return Response
      */
-    public function view_get($args): Response
+    public function view_get(array $args): Response
     {
         $id = intval($this->getArgOrDefault($args, 'pattern', isRequired: true));
         try {

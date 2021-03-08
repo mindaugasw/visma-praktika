@@ -6,6 +6,7 @@ use App\Entity\WordResult;
 use App\Exception\ServerErrorException;
 use App\Service\DB\DBConnection;
 use App\Service\DB\QueryBuilder;
+use App\Service\Paginator\PaginatedList;
 use Exception;
 use Psr\Log\LoggerInterface;
 
@@ -24,6 +25,25 @@ class WordResultRepository
         $this->db = $db;
         $this->wtpRepo = $wtpRepo;
         $this->logger = $logger;
+    }
+    
+    public function getPaginated(int $limit, int $offset): PaginatedList
+    {
+        $itemsSql = (new QueryBuilder())
+            ->select('*')
+            ->from(self::TABLE)
+            ->limitOffset($limit, $offset)
+            ->getQuery();
+
+        $countSql = (new QueryBuilder())
+            ->select('COUNT(id)')
+            ->from(self::TABLE)
+            ->getQuery();
+
+        $items = $this->db->fetchClass($itemsSql, [], WordResult::class);
+        $totalCount = intval($this->db->fetch($countSql, [])[0][0]);
+
+        return new PaginatedList($items, $limit, $offset, $totalCount);
     }
 
     public function findOneByInput(string $inputWord, bool $joinPatterns = true): ?WordResult
